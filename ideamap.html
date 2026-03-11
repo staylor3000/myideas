@@ -15,8 +15,6 @@
     --muted: #9a9389;
     --accent: #2d6a2d;
     --accent2: #c4365a;
-    --accent3: #1e6a9a;
-    --accent4: #b06a10;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -33,172 +31,102 @@
 
   /* TOP BAR */
   .topbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    display: flex; align-items: center; justify-content: space-between;
     padding: 14px 24px;
     border-bottom: 1px solid var(--border);
     background: var(--surface);
-    flex-shrink: 0;
-    z-index: 100;
-    gap: 16px;
+    flex-shrink: 0; z-index: 100; gap: 16px;
   }
-
   .topbar-left { display: flex; align-items: center; gap: 18px; min-width: 0; flex: 1; }
-
-  .logo {
-    font-family: 'Fraunces', serif;
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--accent);
-    letter-spacing: -0.5px;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
+  .logo { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 700; color: var(--accent); letter-spacing: -0.5px; white-space: nowrap; flex-shrink: 0; }
   .logo span { color: var(--muted); font-weight: 300; font-style: italic; }
 
-  /* BREADCRUMB */
-  .breadcrumb {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    flex-wrap: wrap;
-    min-width: 0;
-  }
-  .bc-home {
-    color: var(--muted);
-    cursor: pointer;
-    transition: color 0.15s;
-    white-space: nowrap;
-  }
-  .bc-home:hover { color: var(--text); }
-  .bc-link {
-    color: var(--muted);
-    cursor: pointer;
-    transition: color 0.15s;
-    white-space: nowrap;
-  }
-  .bc-link:hover { color: var(--text); text-decoration: underline; }
+  /* TOPBAR BREADCRUMB */
+  .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 12px; flex-wrap: wrap; min-width: 0; }
+  .bc-home, .bc-link { color: var(--muted); cursor: pointer; transition: color 0.15s; white-space: nowrap; }
+  .bc-home:hover, .bc-link:hover { color: var(--text); }
   .bc-sep { color: var(--border); font-size: 13px; }
   .bc-current { color: var(--text); font-weight: 500; white-space: nowrap; }
 
   .topbar-actions { display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
-
-  .view-toggle {
-    display: flex;
-    background: var(--surface2);
-    border-radius: 8px;
-    padding: 3px;
-    gap: 2px;
-  }
-  .view-btn {
-    padding: 5px 14px;
-    border: none;
-    background: none;
-    color: var(--muted);
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
+  .view-toggle { display: flex; background: var(--surface2); border-radius: 8px; padding: 3px; gap: 2px; }
+  .view-btn { padding: 5px 14px; border: none; background: none; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
   .view-btn.active { background: var(--border); color: var(--text); }
-
-  .add-btn {
-    background: var(--accent);
-    color: #ffffff;
-    border: none;
-    padding: 8px 18px;
-    border-radius: 8px;
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.15s;
-    white-space: nowrap;
-  }
+  .add-btn { background: var(--accent); color: #ffffff; border: none; padding: 8px 18px; border-radius: 8px; font-family: 'DM Mono', monospace; font-size: 12px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
   .add-btn:hover { background: #3a8a3a; transform: translateY(-1px); }
 
   /* MAIN LAYOUT */
   .main { display: flex; flex: 1; overflow: hidden; }
 
-  /* SIDEBAR */
+  /* ── SIDEBAR ── */
   .sidebar {
-    width: 200px;
+    width: 220px;
     background: var(--surface);
     border-right: 1px solid var(--border);
-    padding: 16px 12px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .sidebar-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 10px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  /* hide scrollbar visually but keep scroll */
+  .sidebar-scroll::-webkit-scrollbar { width: 0; }
+
+  .sidebar-label {
+    font-size: 9px; text-transform: uppercase;
+    letter-spacing: 2px; color: var(--muted);
+    padding: 2px 8px 8px;
     flex-shrink: 0;
   }
-  .sidebar-label {
-    font-size: 9px;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: var(--muted);
-    padding: 4px 8px 8px;
+
+  /* NAV TREE */
+  .nav-item {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 10px; border-radius: 7px;
+    cursor: pointer; font-size: 12px; color: var(--muted);
+    transition: background 0.12s, color 0.12s;
+    user-select: none; flex-shrink: 0;
   }
-  .tag-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 7px 10px;
-    border-radius: 7px;
-    cursor: pointer;
-    font-size: 12px;
-    color: var(--muted);
-    transition: all 0.15s;
+  .nav-item:hover:not(.nav-current) { background: var(--surface2); color: var(--text); }
+  .nav-item.nav-in-path { color: var(--text); }
+  .nav-item.nav-current  {
+    color: var(--text); font-weight: 500;
+    cursor: default; background: var(--surface2);
   }
+  .nav-item.nav-root { color: var(--muted); font-size: 11px; letter-spacing: 0.3px; }
+  .nav-item.nav-root.nav-current { color: var(--text); font-weight: 500; }
+
+  .nav-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .nav-count { margin-left: auto; font-size: 10px; color: var(--muted); background: var(--surface2); padding: 1px 6px; border-radius: 10px; flex-shrink: 0; }
+  .nav-item.nav-current .nav-count { background: var(--border); }
+
+  /* Sidebar divider + status section */
+  .sidebar-divider { height: 1px; background: var(--border); margin: 8px 0; flex-shrink: 0; }
+
+  .tag-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 7px; cursor: pointer; font-size: 12px; color: var(--muted); transition: all 0.15s; flex-shrink: 0; }
   .tag-item:hover { background: var(--surface2); color: var(--text); }
   .tag-item.active { background: var(--surface2); color: var(--text); }
   .tag-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .tag-count {
-    margin-left: auto;
-    font-size: 10px;
-    color: var(--muted);
-    background: var(--surface2);
-    padding: 1px 6px;
-    border-radius: 10px;
-  }
+  .tag-count { margin-left: auto; font-size: 10px; color: var(--muted); background: var(--surface2); padding: 1px 6px; border-radius: 10px; }
   .tag-item.active .tag-count { background: var(--border); }
-  .sidebar-divider { height: 1px; background: var(--border); margin: 8px 0; }
 
   /* CONTENT */
   .content { flex: 1; overflow: hidden; position: relative; }
   .content-inner { display: flex; flex-direction: column; height: 100%; }
 
   /* GRID VIEW */
-  .grid-view {
-    padding: 24px;
-    overflow-y: auto;
-    height: 100%;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 16px;
-    align-content: start;
-  }
-  .idea-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 18px;
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
-    animation: cardIn 0.3s ease backwards;
-  }
-  @keyframes cardIn {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .idea-card:hover {
-    border-color: #c8c0b4;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
-  }
+  .grid-view { padding: 24px; overflow-y: auto; height: 100%; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; align-content: start; }
+  .idea-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; animation: cardIn 0.3s ease backwards; }
+  @keyframes cardIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .idea-card:hover { border-color: #c8c0b4; transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
   .card-title { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 500; line-height: 1.35; margin-bottom: 8px; color: var(--text); }
   .card-body  { font-size: 11px; color: var(--muted); line-height: 1.6; margin-bottom: 14px; }
   .card-footer { display: flex; align-items: center; justify-content: space-between; }
@@ -206,68 +134,28 @@
   .card-status { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; padding: 2px 7px; border-radius: 4px; border: 1px solid var(--border); color: var(--muted); }
 
   /* MAP VIEW */
-  .map-view {
-    width: 100%; height: 100%;
-    position: relative; overflow: hidden;
-    cursor: grab;
-    background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
-    background-size: 28px 28px;
-  }
+  .map-view { width: 100%; height: 100%; position: relative; overflow: hidden; cursor: grab; background-image: radial-gradient(circle, var(--border) 1px, transparent 1px); background-size: 28px 28px; }
   .map-view:active { cursor: grabbing; }
+  #map-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; will-change: transform, opacity; }
 
-  #map-canvas {
-    position: absolute; top: 0; left: 0;
-    width: 100%; height: 100%;
-    will-change: transform, opacity;
-  }
-
-  .map-node {
-    position: absolute;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 14px 18px 12px;
-    cursor: grab;
-    transition: box-shadow 0.2s, transform 0.2s;
-    min-width: 130px;
-    max-width: 170px;
-    z-index: 2;
-    animation: nodeIn 0.4s ease backwards;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-    user-select: none;
-  }
-  @keyframes nodeIn {
-    from { opacity: 0; transform: scale(0.8); }
-    to   { opacity: 1; transform: scale(1); }
-  }
+  .map-node { position: absolute; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 14px 18px 12px; cursor: grab; transition: box-shadow 0.2s, transform 0.2s; min-width: 130px; max-width: 170px; z-index: 2; animation: nodeIn 0.4s ease backwards; box-shadow: 0 2px 8px rgba(0,0,0,0.07); user-select: none; }
+  @keyframes nodeIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
   .map-node:hover { box-shadow: 0 5px 18px rgba(0,0,0,0.13); z-index: 10; }
-  .map-node.central {
-    background: var(--accent); border-color: var(--accent);
-    border-radius: 20px; padding: 16px 22px; cursor: grab;
-  }
+  .map-node.central { background: var(--accent); border-color: var(--accent); border-radius: 20px; padding: 16px 22px; cursor: grab; }
   .node-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; }
   .node-title { font-family: 'Fraunces', serif; font-size: 13px; font-weight: 500; line-height: 1.3; color: var(--text); }
   .map-node.central .node-title { font-size: 16px; color: #ffffff; }
   .map-node.selected { box-shadow: 0 0 0 2px var(--accent), 0 5px 18px rgba(0,0,0,0.13); }
 
-  /* BOARD NODES */
   .board-node { min-width: 140px; max-width: 180px; padding: 14px 18px 13px; }
   .board-node .node-title { font-size: 14px; }
   .board-count { font-size: 10px; color: var(--muted); margin-top: 5px; }
   .drill-hint { font-size: 9px; color: var(--muted); margin-top: 7px; opacity: 0.65; border-top: 1px solid var(--border); padding-top: 6px; }
 
-  /* SVG LINES */
   .map-lines { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
 
   /* DETAIL PANEL */
-  .detail-panel {
-    position: absolute;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 14px; padding: 18px 20px;
-    width: 220px; z-index: 15;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
-    animation: nodeIn 0.2s ease backwards;
-  }
+  .detail-panel { position: absolute; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; width: 220px; z-index: 15; box-shadow: 0 4px 20px rgba(0,0,0,0.12); animation: nodeIn 0.2s ease backwards; }
   .detail-panel .detail-close { position: absolute; top: 10px; right: 12px; background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; line-height: 1; padding: 0; }
   .detail-panel .detail-close:hover { color: var(--text); }
   .detail-panel .detail-delete { display: block; width: 100%; margin-top: 14px; padding: 7px 0; background: none; border: 1px solid var(--border); border-radius: 7px; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.15s; }
@@ -280,64 +168,37 @@
   .detail-meta-row span:last-child  { color: var(--text); font-weight: 500; }
 
   /* MODAL */
-  .modal-overlay {
-    position: fixed; inset: 0;
-    background: rgba(26,24,20,0.4); backdrop-filter: blur(4px);
-    z-index: 1000; display: flex; align-items: center; justify-content: center;
-    opacity: 0; pointer-events: none; transition: opacity 0.2s;
-  }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(26,24,20,0.4); backdrop-filter: blur(4px); z-index: 1000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
   .modal-overlay.open { opacity: 1; pointer-events: all; }
   .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; width: 480px; transform: translateY(20px); transition: transform 0.2s; }
   .modal-overlay.open .modal { transform: translateY(0); }
-
-  /* MODAL MODE TOGGLE (board vs idea) */
-  .modal-mode-toggle {
-    display: flex;
-    background: var(--surface2);
-    border-radius: 8px;
-    padding: 3px;
-    gap: 2px;
-    margin-bottom: 22px;
-  }
-  .mode-tab {
-    flex: 1;
-    padding: 7px 0;
-    border: none; background: none;
-    color: var(--muted);
-    font-family: 'DM Mono', monospace; font-size: 12px;
-    border-radius: 6px; cursor: pointer; transition: all 0.15s;
-  }
+  .modal-mode-toggle { display: flex; background: var(--surface2); border-radius: 8px; padding: 3px; gap: 2px; margin-bottom: 22px; }
+  .mode-tab { flex: 1; padding: 7px 0; border: none; background: none; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 12px; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
   .mode-tab.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-
   .modal-title { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 500; margin-bottom: 20px; color: var(--text); }
   .field { margin-bottom: 16px; }
   .field label { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 6px; }
   .field input, .field textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 13px; outline: none; transition: border-color 0.15s; resize: none; }
   .field input:focus, .field textarea:focus { border-color: var(--accent); }
-
   .color-swatches { display: flex; gap: 10px; flex-wrap: wrap; }
   .color-swatch { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: transform 0.15s, border-color 0.15s; }
   .color-swatch:hover { transform: scale(1.15); }
   .color-swatch.selected { border-color: var(--text); transform: scale(1.1); }
-
   .tag-select { display: flex; gap: 8px; flex-wrap: wrap; }
   .tag-option { padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 11px; font-family: 'DM Mono', monospace; cursor: pointer; transition: all 0.15s; color: var(--muted); background: none; }
   .tag-option:hover { border-color: var(--muted); color: var(--text); }
   .tag-option.selected { color: #0e0e10; border-color: transparent; }
-
   .modal-actions { display: flex; gap: 10px; margin-top: 22px; justify-content: flex-end; }
   .btn-cancel { padding: 9px 20px; border: 1px solid var(--border); background: none; color: var(--muted); border-radius: 8px; font-family: 'DM Mono', monospace; font-size: 12px; cursor: pointer; transition: all 0.15s; }
   .btn-cancel:hover { color: var(--text); border-color: var(--muted); }
   .btn-save { padding: 9px 20px; background: var(--accent); color: #ffffff; border: none; border-radius: 8px; font-family: 'DM Mono', monospace; font-size: 12px; cursor: pointer; transition: all 0.15s; }
   .btn-save:hover { background: #3a8a3a; }
 
-  /* SEARCH */
   .search-wrap { padding: 14px 24px 0; flex-shrink: 0; position: relative; }
   .search-input { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 9px 14px 9px 36px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 12px; outline: none; transition: border-color 0.15s; }
   .search-icon { position: absolute; left: 38px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 14px; pointer-events: none; }
   .search-input:focus { border-color: var(--accent); }
 
-  /* TOAST */
   .toast { position: fixed; bottom: 28px; right: 28px; background: var(--text); color: #ffffff; padding: 12px 20px; border-radius: 10px; font-size: 12px; font-family: 'DM Mono', monospace; transform: translateY(60px); opacity: 0; transition: all 0.3s; z-index: 9999; }
   .toast.show { transform: translateY(0); opacity: 1; }
 </style>
@@ -362,29 +223,41 @@
 <!-- MAIN -->
 <div class="main">
 
-  <!-- SIDEBAR -->
-  <div class="sidebar" id="sidebar" style="display:none">
-    <div class="sidebar-label">Status</div>
-    <div class="tag-item active" onclick="filterTag('all', this)">
-      <div class="tag-dot" style="background:#7c7a90"></div>
-      all ideas
-      <span class="tag-count" id="count-all">0</span>
-    </div>
-    <div class="sidebar-divider"></div>
-    <div class="tag-item" onclick="filterTag('raw', this)">
-      <div class="tag-dot" style="background:#c8c0b4"></div>
-      raw
-      <span class="tag-count" id="count-raw">0</span>
-    </div>
-    <div class="tag-item" onclick="filterTag('fleshed', this)">
-      <div class="tag-dot" style="background:#9a9389"></div>
-      fleshed out
-      <span class="tag-count" id="count-fleshed">0</span>
-    </div>
-    <div class="tag-item" onclick="filterTag('active', this)">
-      <div class="tag-dot" style="background:#2d6a2d"></div>
-      active
-      <span class="tag-count" id="count-active">0</span>
+  <!-- SIDEBAR: always visible, navigation tree + optional status filters -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-scroll">
+
+      <!-- Navigation tree -->
+      <div class="sidebar-label">Navigation</div>
+      <div id="sidebar-nav"></div>
+
+      <!-- Status filters — shown only when current board has direct ideas -->
+      <div id="sidebar-status" style="display:none">
+        <div class="sidebar-divider"></div>
+        <div class="sidebar-label">Filter</div>
+        <div class="tag-item active" onclick="filterTag('all', this)">
+          <div class="tag-dot" style="background:#7c7a90"></div>
+          all ideas
+          <span class="tag-count" id="count-all">0</span>
+        </div>
+        <div class="sidebar-divider" style="margin:4px 0"></div>
+        <div class="tag-item" onclick="filterTag('raw', this)">
+          <div class="tag-dot" style="background:#c8c0b4"></div>
+          raw
+          <span class="tag-count" id="count-raw">0</span>
+        </div>
+        <div class="tag-item" onclick="filterTag('fleshed', this)">
+          <div class="tag-dot" style="background:#9a9389"></div>
+          fleshed out
+          <span class="tag-count" id="count-fleshed">0</span>
+        </div>
+        <div class="tag-item" onclick="filterTag('active', this)">
+          <div class="tag-dot" style="background:#2d6a2d"></div>
+          active
+          <span class="tag-count" id="count-active">0</span>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -412,16 +285,12 @@
 <!-- MODAL -->
 <div class="modal-overlay" id="modal" onclick="closeModalOutside(event)">
   <div class="modal">
-
-    <!-- Mode toggle (board vs idea) — only shown inside a board -->
     <div class="modal-mode-toggle" id="modal-mode-toggle" style="display:none">
       <button class="mode-tab active" id="tab-board" onclick="setModalMode('board')">new board</button>
-      <button class="mode-tab" id="tab-idea" onclick="setModalMode('idea')">new idea</button>
+      <button class="mode-tab"        id="tab-idea"  onclick="setModalMode('idea')">new idea</button>
     </div>
-
     <div class="modal-title" id="modal-title-text">create a board</div>
 
-    <!-- Board fields -->
     <div id="board-fields">
       <div class="field">
         <label>Board Name</label>
@@ -433,7 +302,6 @@
       </div>
     </div>
 
-    <!-- Idea fields -->
     <div id="idea-fields" style="display:none">
       <div class="field">
         <label>Title</label>
@@ -473,7 +341,6 @@ const SWATCH_COLORS = [
 
 // ── Data ───────────────────────────────────────────────────────────────────────
 
-// parentId: null = top-level board; string = nested inside another board
 let boards = [
   { id: 'product',  title: 'Product',  color: '#2d6a2d', parentId: null },
   { id: 'design',   title: 'Design',   color: '#c4365a', parentId: null },
@@ -481,36 +348,37 @@ let boards = [
   { id: 'business', title: 'Business', color: '#b06a10', parentId: null },
 ];
 
-// tag = boardId that owns this idea (can be deeply nested)
 let ideas = [
-  { id:1, title:'IdeaMap — the app itself',  body:'A tool for capturing and visualising ideas with tags, mindmaps and smart resurfacing.', tag:'product',  status:'active', date:'today' },
-  { id:2, title:'Fridge inventory tracker',  body:"Scan receipts to auto-update what's in your fridge. Alert when things near expiry.",   tag:'product',  status:'fleshed', date:'2d ago' },
-  { id:3, title:'Ambient focus sounds',      body:'Generative audio that adapts to your work rhythm — faster when in flow, slower when idle.', tag:'tech', status:'raw',    date:'3d ago' },
-  { id:4, title:'Type-based card layouts',   body:'Different card shapes for different idea types. Lists look different from concepts.',       tag:'design', status:'fleshed', date:'5d ago' },
-  { id:5, title:'AI idea clustering',        body:'Surface hidden connections between notes using embeddings. Group by semantic similarity.',   tag:'tech', status:'raw',    date:'1w ago' },
-  { id:6, title:'Idea licensing marketplace',body:'Sell or license your unused ideas to companies looking for innovation.',                     tag:'business', status:'raw', date:'1w ago' },
+  { id:1, title:'IdeaMap — the app itself',   body:'A tool for capturing and visualising ideas with tags, mindmaps and smart resurfacing.', tag:'product',  status:'active', date:'today' },
+  { id:2, title:'Fridge inventory tracker',   body:"Scan receipts to auto-update what's in your fridge. Alert when things near expiry.",   tag:'product',  status:'fleshed', date:'2d ago' },
+  { id:3, title:'Ambient focus sounds',       body:'Generative audio that adapts to your work rhythm — faster when in flow, slower when idle.', tag:'tech', status:'raw', date:'3d ago' },
+  { id:4, title:'Type-based card layouts',    body:'Different card shapes for different idea types. Lists look different from concepts.',  tag:'design', status:'fleshed', date:'5d ago' },
+  { id:5, title:'AI idea clustering',         body:'Surface hidden connections using embeddings. Group by semantic similarity, not tags.',  tag:'tech', status:'raw', date:'1w ago' },
+  { id:6, title:'Idea licensing marketplace', body:'Sell or license your unused ideas to companies looking for innovation.',               tag:'business', status:'raw', date:'1w ago' },
 ];
 
 // ── Navigation state ───────────────────────────────────────────────────────────
 
-let navigationStack  = [];  // array of board ids, e.g. ['holidays', 'california-2024']
+let navigationStack  = [];
 let currentView      = 'map';
 let currentFilter    = 'all';
 let currentModalMode = 'board';
-let selStatus        = 'raw';
-let selColor         = SWATCH_COLORS[0];
+let selStatus = 'raw';
+let selColor  = SWATCH_COLORS[0];
 
-// Positions stored per-board-id so each level has its own independent layout
 let nodePositionsByBoard = {};
-
-// DOM references for map
 let centralNode         = null;
 let detailConnectorPath = null;
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
+// ── Core helpers ───────────────────────────────────────────────────────────────
 
 function activeBoardId() {
   return navigationStack.length > 0 ? navigationStack[navigationStack.length - 1] : null;
+}
+
+function activeBoard() {
+  const id = activeBoardId();
+  return id ? boards.find(b => b.id === id) || null : null;
 }
 
 function currentPositions() {
@@ -519,18 +387,226 @@ function currentPositions() {
   return nodePositionsByBoard[key];
 }
 
-function activeBoard() {
-  const id = activeBoardId();
-  return id ? boards.find(b => b.id === id) || null : null;
-}
-
-// Count direct children (sub-boards + ideas) of a board
 function childCount(boardId) {
   return boards.filter(b => b.parentId === boardId).length
        + ideas.filter(i => i.tag === boardId).length;
 }
 
-// ── Default positions ──────────────────────────────────────────────────────────
+// Return the full navigation stack needed to reach boardId from root
+function pathToBoard(boardId) {
+  const path = [];
+  let cur = boardId;
+  while (cur) {
+    path.unshift(cur);
+    const b = boards.find(x => x.id === cur);
+    cur = b ? b.parentId : null;
+  }
+  return path;
+}
+
+// ── Navigation ─────────────────────────────────────────────────────────────────
+
+function navigateToLevel(targetStack) {
+  const same = targetStack.length === navigationStack.length
+    && targetStack.every((id, i) => id === navigationStack[i]);
+  if (same) return;
+
+  closeDetail();
+  const canvas = document.getElementById('map-canvas');
+  canvas.style.transition = 'opacity 0.25s ease';
+  canvas.style.opacity    = '0';
+
+  setTimeout(() => {
+    navigationStack = [...targetStack];
+    currentFilter   = 'all';
+    updateUI();
+    renderLevel(true);
+  }, 260);
+}
+
+function navigateToIndex(i) {
+  navigateToLevel(navigationStack.slice(0, i + 1));
+}
+
+function navigateToBoard(boardId) {
+  navigateToLevel(pathToBoard(boardId));
+}
+
+function drillInto(boardId, nodeEl) {
+  const canvas = document.getElementById('map-canvas');
+  const svg    = document.getElementById('map-lines');
+  canvas.querySelectorAll('.map-node').forEach(n => {
+    n.style.transition = 'transform 0.32s ease, opacity 0.28s ease';
+    if (n === nodeEl) { n.style.transform = 'scale(2.2)'; n.style.opacity = '0'; }
+    else              { n.style.transform = 'scale(0.85)'; n.style.opacity = '0'; }
+  });
+  svg.style.transition = 'opacity 0.2s ease';
+  svg.style.opacity    = '0';
+  setTimeout(() => {
+    navigationStack.push(boardId);
+    currentFilter = 'all';
+    updateUI();
+    renderLevel(true);
+  }, 340);
+}
+
+function drillOut() {
+  if (navigationStack.length === 0) return;
+  navigateToLevel(navigationStack.slice(0, -1));
+}
+
+// ── UI state ───────────────────────────────────────────────────────────────────
+
+function updateBreadcrumb() {
+  const bc = document.getElementById('breadcrumb');
+  let html = `<span class="bc-home" onclick="navigateToLevel([])">my ideas</span>`;
+  navigationStack.forEach((boardId, i) => {
+    const b = boards.find(x => x.id === boardId);
+    const isLast = i === navigationStack.length - 1;
+    html += `<span class="bc-sep">›</span>`;
+    if (isLast) {
+      html += `<span class="bc-current">${b ? b.title : boardId}</span>`;
+    } else {
+      html += `<span class="bc-link" onclick="navigateToIndex(${i})">${b ? b.title : boardId}</span>`;
+    }
+  });
+  bc.innerHTML = html;
+}
+
+// Build the sidebar nav tree HTML (recursive)
+function buildNavTree(parentId, depth) {
+  const children = boards.filter(b => b.parentId === parentId);
+  if (!children.length) return '';
+  let html = '';
+  children.forEach(board => {
+    const isCurrent = activeBoardId() === board.id;
+    const isInPath  = !isCurrent && navigationStack.includes(board.id);
+    const count     = childCount(board.id);
+    const indent    = 10 + depth * 14;
+    let cls = 'nav-item';
+    if (isCurrent)  cls += ' nav-current';
+    else if (isInPath) cls += ' nav-in-path';
+    // Left accent border for in-path and current
+    const borderStyle = (isCurrent || isInPath)
+      ? `border-left: 2px solid ${board.color}; padding-left: ${indent - 2}px;`
+      : `padding-left: ${indent}px;`;
+    const onclick = isCurrent ? '' : `onclick="navigateToBoard('${board.id}')"`;
+    html += `<div class="${cls}" style="${borderStyle}" ${onclick}>
+      <div class="nav-dot" style="background:${board.color}; opacity:${(isCurrent||isInPath) ? 1 : 0.55}"></div>
+      <span>${board.title}</span>
+      ${count > 0 ? `<span class="nav-count">${count}</span>` : ''}
+    </div>`;
+    // Expand children only for ancestors in the active path (not current, which is the leaf)
+    if (isInPath) {
+      html += buildNavTree(board.id, depth + 1);
+    }
+  });
+  return html;
+}
+
+function renderSidebarNav() {
+  const el = document.getElementById('sidebar-nav');
+  if (!el) return;
+
+  const isAtTop = navigationStack.length === 0;
+
+  // Root "my ideas" item
+  const rootCls = `nav-item nav-root${isAtTop ? ' nav-current' : ''}`;
+  const rootOnclick = isAtTop ? '' : `onclick="navigateToLevel([])"`;
+  let html = `<div class="${rootCls}" ${rootOnclick}>
+    <div class="nav-dot" style="background:var(--accent); opacity:${isAtTop ? 1 : 0.55}"></div>
+    <span>my ideas</span>
+  </div>`;
+
+  html += buildNavTree(null, 1);
+  el.innerHTML = html;
+
+  // Show status section only when current board has direct ideas
+  const boardId = activeBoardId();
+  const hasIdeas = boardId && ideas.some(i => i.tag === boardId);
+  document.getElementById('sidebar-status').style.display = hasIdeas ? 'block' : 'none';
+}
+
+function updateCounts() {
+  const boardId = activeBoardId();
+  if (!boardId) return;
+  const boardIdeas = ideas.filter(i => i.tag === boardId);
+  const subCount   = boards.filter(b => b.parentId === boardId).length;
+  const allEl = document.getElementById('count-all');
+  if (allEl) allEl.textContent = boardIdeas.length + subCount;
+  ['raw','fleshed','active'].forEach(s => {
+    const el = document.getElementById('count-' + s);
+    if (el) el.textContent = boardIdeas.filter(i => i.status === s).length;
+  });
+}
+
+function updateUI() {
+  const addBtn = document.getElementById('add-btn');
+  const board  = activeBoard();
+
+  updateBreadcrumb();
+  renderSidebarNav();
+
+  addBtn.textContent = board ? '+ add' : '+ new board';
+
+  // Reset status filter active state
+  document.querySelectorAll('.tag-item').forEach(x => x.classList.remove('active'));
+  const allItem = document.querySelector('.tag-item');
+  if (allItem) allItem.classList.add('active');
+
+  updateCounts();
+}
+
+// ── View ───────────────────────────────────────────────────────────────────────
+
+function setView(v) {
+  currentView = v;
+  document.getElementById('btn-grid').classList.toggle('active', v === 'grid');
+  document.getElementById('btn-map').classList.toggle('active',  v === 'map');
+  document.getElementById('grid-view').style.display   = v === 'grid' ? 'grid'  : 'none';
+  document.getElementById('map-view').style.display    = v === 'map'  ? 'block' : 'none';
+  document.getElementById('search-wrap').style.display = v === 'grid' ? 'block' : 'none';
+  if (v === 'map') renderMap();
+  else renderGrid();
+}
+
+function filterTag(tag, el) {
+  currentFilter = tag;
+  document.querySelectorAll('.tag-item').forEach(x => x.classList.remove('active'));
+  el.classList.add('active');
+  if (currentView === 'map') renderMap();
+  else renderGrid();
+}
+
+function searchIdeas(q) { renderGrid(q.toLowerCase()); }
+
+// ── Grid ───────────────────────────────────────────────────────────────────────
+
+function renderGrid(query = '') {
+  const container = document.getElementById('grid-view');
+  const boardId   = activeBoardId();
+  let filtered = ideas;
+  if (boardId) filtered = filtered.filter(i => i.tag === boardId);
+  if (currentFilter !== 'all') filtered = filtered.filter(i => i.status === currentFilter);
+  if (query) filtered = filtered.filter(i =>
+    i.title.toLowerCase().includes(query) || i.body.toLowerCase().includes(query)
+  );
+  container.innerHTML = filtered.map((idea, idx) => {
+    const b   = boards.find(x => x.id === idea.tag);
+    const col = b ? b.color : '#7c7a90';
+    return `<div class="idea-card" style="animation-delay:${idx*0.05}s">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${col};border-radius:12px 12px 0 0"></div>
+      <div class="card-title">${idea.title}</div>
+      <div class="card-body">${idea.body}</div>
+      <div class="card-footer">
+        <span class="card-date">${idea.date}</span>
+        <span class="card-status">${idea.status}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Canvas helpers ─────────────────────────────────────────────────────────────
 
 function getDefaultPositions(count, cx, cy, radius) {
   const out = [];
@@ -541,8 +617,6 @@ function getDefaultPositions(count, cx, cy, radius) {
   }
   return out;
 }
-
-// ── Canvas helpers ─────────────────────────────────────────────────────────────
 
 function nodeCenter(el) {
   return [
@@ -583,11 +657,10 @@ function makeDraggable(el, connectedPaths, onClick) {
 
     function onMove(e) {
       const dx = e.clientX-sx, dy = e.clientY-sy;
-      if (!dragged && (Math.abs(dx)>3 || Math.abs(dy)>3)) dragged = true;
+      if (!dragged && (Math.abs(dx)>3||Math.abs(dy)>3)) dragged = true;
       el.style.left = (sl+dx)+'px'; el.style.top = (st+dy)+'px';
       connectedPaths.forEach(({ pathEl, otherEl, isSource }) =>
-        isSource ? refreshConnector(pathEl, el, otherEl)
-                 : refreshConnector(pathEl, otherEl, el)
+        isSource ? refreshConnector(pathEl, el, otherEl) : refreshConnector(pathEl, otherEl, el)
       );
     }
     function onUp() {
@@ -638,11 +711,8 @@ function makeBoardNode(board, pos, subtitle, idx) {
 function _prepCanvas(animate) {
   const canvas = document.getElementById('map-canvas');
   const svg    = document.getElementById('map-lines');
-  canvas.style.transition = 'none';
-  canvas.style.transform  = '';
-  canvas.style.opacity    = '';
-  svg.style.transition    = '';
-  svg.style.opacity       = '';
+  canvas.style.transition = 'none'; canvas.style.transform = ''; canvas.style.opacity = '';
+  svg.style.transition    = ''; svg.style.opacity = '';
   canvas.querySelectorAll('.map-node, .detail-panel').forEach(n => n.remove());
   if (detailConnectorPath) { detailConnectorPath.remove(); detailConnectorPath = null; }
   svg.innerHTML = '';
@@ -658,46 +728,38 @@ function _prepCanvas(animate) {
 
 function renderMap() { renderLevel(); }
 
-// Unified render: works at any depth.
-// Shows sub-boards of the current board, plus ideas belonging to it.
 function renderLevel(animate) {
   const boardId = activeBoardId();
   const board   = activeBoard();
   const { canvas, svg } = _prepCanvas(animate);
   const container = document.getElementById('map-view');
   const W = container.offsetWidth, H = container.offsetHeight;
-  const cx = W/2 - 90, cy = H/2 - 50;
+  const cx = W/2-90, cy = H/2-50;
 
-  // Central node
-  centralNode = makeNode(true, board ? board.title : 'my ideas', '', cx, cy, board ? board.color : '', 0);
+  centralNode = makeNode(true, board ? board.title : 'my ideas', '', cx, cy, '', 0);
   if (board) { centralNode.style.background = board.color; centralNode.style.borderColor = board.color; }
   canvas.appendChild(centralNode);
 
-  // Children at this level
   const childBoards  = boards.filter(b => b.parentId === boardId);
   const childIdeas   = boardId ? ideas.filter(i => i.tag === boardId) : [];
-  const visibleIdeas = currentFilter !== 'all'
-    ? childIdeas.filter(i => i.status === currentFilter)
-    : childIdeas;
+  const visibleIdeas = currentFilter !== 'all' ? childIdeas.filter(i => i.status === currentFilter) : childIdeas;
 
-  const total    = childBoards.length + visibleIdeas.length;
-  const positions = currentPositions();
-  const defaults  = getDefaultPositions(total, cx, cy, 240);
+  const total      = childBoards.length + visibleIdeas.length;
+  const positions  = currentPositions();
+  const defaults   = getDefaultPositions(total, cx, cy, 240);
   const centralPaths = [];
   let nodeIdx = 0;
 
-  // Sub-board nodes
   childBoards.forEach(b => {
-    const subBoardCount = boards.filter(x => x.parentId === b.id).length;
-    const ideaCount     = ideas.filter(i => i.tag === b.id).length;
+    const subCnt  = boards.filter(x => x.parentId === b.id).length;
+    const ideaCnt = ideas.filter(i => i.tag === b.id).length;
     const parts = [];
-    if (subBoardCount) parts.push(`${subBoardCount} board${subBoardCount !== 1 ? 's' : ''}`);
-    if (ideaCount)     parts.push(`${ideaCount} idea${ideaCount !== 1 ? 's' : ''}`);
+    if (subCnt)  parts.push(`${subCnt} board${subCnt !== 1 ? 's' : ''}`);
+    if (ideaCnt) parts.push(`${ideaCnt} idea${ideaCnt !== 1 ? 's' : ''}`);
     const subtitle = parts.length ? parts.join(', ') : 'empty';
 
     const pos = positions[b.id] || defaults[nodeIdx];
     if (!positions[b.id]) positions[b.id] = pos;
-
     const node = makeBoardNode(b, pos, subtitle, nodeIdx);
     canvas.appendChild(node);
 
@@ -710,13 +772,11 @@ function renderLevel(animate) {
     nodeIdx++;
   });
 
-  // Idea nodes
   const col = board ? board.color : '#7c7a90';
   visibleIdeas.forEach(idea => {
     const pos = positions[idea.id] || defaults[nodeIdx];
     if (!pos) return;
     if (!positions[idea.id]) positions[idea.id] = pos;
-
     const node = makeNode(false, idea.title, idea.status, pos.x, pos.y, col, nodeIdx);
     node.dataset.ideaId = idea.id;
     canvas.appendChild(node);
@@ -724,166 +784,11 @@ function renderLevel(animate) {
     const pathEl = makePath(svg, col);
     refreshConnector(pathEl, centralNode, node);
     centralPaths.push({ pathEl, otherEl: node, isSource: true });
-
     makeDraggable(node, [{ pathEl, otherEl: centralNode, isSource: false }], () => showDetail(idea.id, node));
     nodeIdx++;
   });
 
   makeDraggable(centralNode, centralPaths, null);
-}
-
-// ── Navigation ─────────────────────────────────────────────────────────────────
-
-function drillInto(boardId, nodeEl) {
-  const canvas = document.getElementById('map-canvas');
-  const svg    = document.getElementById('map-lines');
-
-  canvas.querySelectorAll('.map-node').forEach(n => {
-    n.style.transition = 'transform 0.32s ease, opacity 0.28s ease';
-    if (n === nodeEl) { n.style.transform = 'scale(2.2)'; n.style.opacity = '0'; }
-    else              { n.style.transform = 'scale(0.85)'; n.style.opacity = '0'; }
-  });
-  svg.style.transition = 'opacity 0.2s ease';
-  svg.style.opacity    = '0';
-
-  setTimeout(() => {
-    navigationStack.push(boardId);
-    currentFilter = 'all';
-    updateUI();
-    renderLevel(true);
-  }, 340);
-}
-
-// Navigate to a specific stack depth (pass the target stack array)
-function navigateToLevel(targetStack) {
-  const same = targetStack.length === navigationStack.length
-    && targetStack.every((id, i) => id === navigationStack[i]);
-  if (same) return;
-
-  closeDetail();
-  const canvas = document.getElementById('map-canvas');
-  canvas.style.transition = 'opacity 0.25s ease';
-  canvas.style.opacity    = '0';
-
-  setTimeout(() => {
-    navigationStack = [...targetStack];
-    currentFilter   = 'all';
-    updateUI();
-    renderLevel(true);
-  }, 260);
-}
-
-// Navigate to a specific index in the current stack (for breadcrumb clicks)
-function navigateToIndex(i) {
-  navigateToLevel(navigationStack.slice(0, i + 1));
-}
-
-function drillOut() {
-  if (navigationStack.length === 0) return;
-  navigateToLevel(navigationStack.slice(0, -1));
-}
-
-// ── UI state ───────────────────────────────────────────────────────────────────
-
-function updateBreadcrumb() {
-  const bc = document.getElementById('breadcrumb');
-  let html = `<span class="bc-home" onclick="navigateToLevel([])">my ideas</span>`;
-  navigationStack.forEach((boardId, i) => {
-    const b      = boards.find(x => x.id === boardId);
-    const isLast = i === navigationStack.length - 1;
-    html += `<span class="bc-sep">›</span>`;
-    if (isLast) {
-      html += `<span class="bc-current">${b ? b.title : boardId}</span>`;
-    } else {
-      html += `<span class="bc-link" onclick="navigateToIndex(${i})">${b ? b.title : boardId}</span>`;
-    }
-  });
-  bc.innerHTML = html;
-}
-
-function updateUI() {
-  const sidebar = document.getElementById('sidebar');
-  const addBtn  = document.getElementById('add-btn');
-  const board   = activeBoard();
-
-  updateBreadcrumb();
-
-  if (board) {
-    sidebar.style.display = 'flex';
-    addBtn.textContent    = '+ add';
-  } else {
-    sidebar.style.display = 'none';
-    addBtn.textContent    = '+ new board';
-  }
-
-  document.querySelectorAll('.tag-item').forEach(x => x.classList.remove('active'));
-  const allItem = document.querySelector('.tag-item');
-  if (allItem) allItem.classList.add('active');
-
-  updateCounts();
-}
-
-function updateCounts() {
-  const boardId = activeBoardId();
-  if (!boardId) return;
-  const boardIdeas = ideas.filter(i => i.tag === boardId);
-  const subCount   = boards.filter(b => b.parentId === boardId).length;
-  const allEl = document.getElementById('count-all');
-  if (allEl) allEl.textContent = boardIdeas.length + subCount;
-  ['raw','fleshed','active'].forEach(s => {
-    const el = document.getElementById('count-' + s);
-    if (el) el.textContent = boardIdeas.filter(i => i.status === s).length;
-  });
-}
-
-// ── View ───────────────────────────────────────────────────────────────────────
-
-function setView(v) {
-  currentView = v;
-  document.getElementById('btn-grid').classList.toggle('active', v === 'grid');
-  document.getElementById('btn-map').classList.toggle('active',  v === 'map');
-  document.getElementById('grid-view').style.display   = v === 'grid' ? 'grid' : 'none';
-  document.getElementById('map-view').style.display    = v === 'map'  ? 'block' : 'none';
-  document.getElementById('search-wrap').style.display = v === 'grid' ? 'block' : 'none';
-  if (v === 'map') renderMap();
-  else renderGrid();
-}
-
-function filterTag(tag, el) {
-  currentFilter = tag;
-  document.querySelectorAll('.tag-item').forEach(x => x.classList.remove('active'));
-  el.classList.add('active');
-  if (currentView === 'map') renderMap();
-  else renderGrid();
-}
-
-function searchIdeas(q) { renderGrid(q.toLowerCase()); }
-
-// ── Grid view ──────────────────────────────────────────────────────────────────
-
-function renderGrid(query = '') {
-  const container = document.getElementById('grid-view');
-  const boardId   = activeBoardId();
-  let filtered = ideas;
-  if (boardId) filtered = filtered.filter(i => i.tag === boardId);
-  if (currentFilter !== 'all') filtered = filtered.filter(i => i.status === currentFilter);
-  if (query) filtered = filtered.filter(i =>
-    i.title.toLowerCase().includes(query) || i.body.toLowerCase().includes(query)
-  );
-  container.innerHTML = filtered.map((idea, idx) => {
-    const b = boards.find(x => x.id === idea.tag);
-    const col = b ? b.color : '#7c7a90';
-    return `
-    <div class="idea-card" style="animation-delay:${idx*0.05}s">
-      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${col};border-radius:12px 12px 0 0"></div>
-      <div class="card-title">${idea.title}</div>
-      <div class="card-body">${idea.body}</div>
-      <div class="card-footer">
-        <span class="card-date">${idea.date}</span>
-        <span class="card-status">${idea.status}</span>
-      </div>
-    </div>`;
-  }).join('');
 }
 
 // ── Detail panel ───────────────────────────────────────────────────────────────
@@ -909,8 +814,8 @@ function showDetail(id, nodeEl) {
 
   const [ncx,ncy] = nodeCenter(nodeEl), [ccx,ccy] = nodeCenter(centralNode);
   const dx = ncx-ccx, dy = ncy-ccy, len = Math.sqrt(dx*dx+dy*dy)||1;
-  const dirX = dx/len, dirY = dy/len, DIST = 210;
-  const px = ncx + dirX*DIST - 110, py = ncy + dirY*DIST - 50;
+  const DIST = 210;
+  const px = ncx + (dx/len)*DIST - 110, py = ncy + (dy/len)*DIST - 50;
 
   const panel = document.createElement('div');
   panel.className = 'detail-panel';
@@ -938,7 +843,7 @@ function showDetail(id, nodeEl) {
     const matrix = new DOMMatrix(getComputedStyle(canvas).transform);
     const curX = matrix.m41, curY = matrix.m42;
     const pL = parseFloat(panel.style.left)+curX, pT = parseFloat(panel.style.top)+curY;
-    const pR = pL + panel.offsetWidth, pB = pT + panel.offsetHeight;
+    const pR = pL+panel.offsetWidth, pB = pT+panel.offsetHeight;
     let shiftX = 0, shiftY = 0;
     if (pR > cW-MARGIN) shiftX = cW-MARGIN-pR;
     if (pL < MARGIN)    shiftX = MARGIN-pL;
@@ -963,6 +868,7 @@ function deleteIdea(id) {
   delete currentPositions()[id];
   closeDetail();
   updateCounts();
+  renderSidebarNav();
   if (currentView === 'map') renderMap();
   else renderGrid();
   showToast('idea deleted');
@@ -971,11 +877,9 @@ function deleteIdea(id) {
 // ── Modal ──────────────────────────────────────────────────────────────────────
 
 function renderColorSwatches() {
-  document.getElementById('color-swatches').innerHTML = SWATCH_COLORS.map(c => `
-    <div class="color-swatch${c === selColor ? ' selected' : ''}"
-         style="background:${c}" data-color="${c}"
-         onclick="selectColor(this)"></div>
-  `).join('');
+  document.getElementById('color-swatches').innerHTML = SWATCH_COLORS.map(c =>
+    `<div class="color-swatch${c === selColor ? ' selected' : ''}" style="background:${c}" data-color="${c}" onclick="selectColor(this)"></div>`
+  ).join('');
 }
 
 function selectColor(el) {
@@ -985,9 +889,7 @@ function selectColor(el) {
 }
 
 function selectStatus(btn) {
-  document.querySelectorAll('#status-select .tag-option').forEach(b => {
-    b.classList.remove('selected'); b.style.background = ''; b.style.color = '';
-  });
+  document.querySelectorAll('#status-select .tag-option').forEach(b => { b.classList.remove('selected'); b.style.background = ''; b.style.color = ''; });
   btn.classList.add('selected');
   btn.style.background = '#2d6a2d'; btn.style.color = '#ffffff';
   selStatus = btn.dataset.status;
@@ -1005,15 +907,9 @@ function setModalMode(mode) {
 
 function openModal() {
   const isTopLevel = activeBoardId() === null;
-  // Toggle only appears inside a board (where you can add either)
   document.getElementById('modal-mode-toggle').style.display = isTopLevel ? 'none' : 'flex';
-  // Default mode: board at all levels (user can switch to idea inside a board)
   setModalMode('board');
-  // Inherit parent board colour as default for sub-board
-  if (!isTopLevel) {
-    const b = activeBoard();
-    if (b) { selColor = b.color; }
-  }
+  if (!isTopLevel) { const b = activeBoard(); if (b) selColor = b.color; }
   renderColorSwatches();
   document.getElementById('modal').classList.add('open');
   setTimeout(() => document.getElementById('board-title').focus(), 200);
@@ -1024,9 +920,7 @@ function closeModal() {
   document.getElementById('board-title').value = '';
   document.getElementById('idea-title').value  = '';
   document.getElementById('idea-body').value   = '';
-  document.querySelectorAll('#status-select .tag-option').forEach(b => {
-    b.classList.remove('selected'); b.style.background = ''; b.style.color = '';
-  });
+  document.querySelectorAll('#status-select .tag-option').forEach(b => { b.classList.remove('selected'); b.style.background = ''; b.style.color = ''; });
   selStatus = 'raw';
 }
 
@@ -1042,7 +936,6 @@ function saveBoard() {
   if (!title) { showToast('⚠ add a name first'); return; }
   const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now();
   boards.push({ id, title, color: selColor, parentId: activeBoardId() });
-  // Reset positions for this level so the new board gets a default spot
   delete nodePositionsByBoard[activeBoardId() || 'top'];
   closeModal();
   if (currentView === 'map') renderMap();
@@ -1053,17 +946,11 @@ function saveBoard() {
 function saveIdea() {
   const title = document.getElementById('idea-title').value.trim();
   if (!title) { showToast('⚠ add a title first'); return; }
-  ideas.unshift({
-    id: Date.now(), title,
-    body: document.getElementById('idea-body').value.trim() || 'No notes yet.',
-    tag: activeBoardId(),
-    status: selStatus || 'raw',
-    date: 'just now',
-  });
+  ideas.unshift({ id: Date.now(), title, body: document.getElementById('idea-body').value.trim() || 'No notes yet.', tag: activeBoardId(), status: selStatus || 'raw', date: 'just now' });
   if (currentView === 'map') renderMap();
   else renderGrid();
   closeModal();
-  updateCounts();
+  updateUI();
   showToast('✦ idea saved');
 }
 
@@ -1076,8 +963,8 @@ function saveIdea() {
   mapView.addEventListener('mousedown', e => {
     const t = e.target;
     if (t === mapView || t === canvas || t.classList.contains('map-lines') || t.tagName === 'svg') {
-      panStart  = { x: e.clientX, y: e.clientY };
-      const m   = new DOMMatrix(getComputedStyle(canvas).transform);
+      panStart = { x: e.clientX, y: e.clientY };
+      const m  = new DOMMatrix(getComputedStyle(canvas).transform);
       panOrigin = { x: m.m41, y: m.m42 };
     }
   });
