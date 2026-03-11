@@ -465,6 +465,14 @@
     height: 100%;
   }
 
+  /* MAP CANVAS (pans to reveal detail panels) */
+  #map-canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
   /* SVG LINES for map */
   .map-lines {
     position: absolute;
@@ -652,7 +660,9 @@
 
       <!-- MAP VIEW -->
       <div class="map-view" id="map-view" style="display:none">
-        <svg class="map-lines" id="map-lines"></svg>
+        <div id="map-canvas">
+          <svg class="map-lines" id="map-lines"></svg>
+        </div>
       </div>
 
     </div>
@@ -847,7 +857,11 @@ function makePath(svg, col, neutral = false) {
 
 function renderMap() {
   const container = document.getElementById('map-view');
-  container.querySelectorAll('.map-node, .detail-panel').forEach(n => n.remove());
+  const canvas = document.getElementById('map-canvas');
+  canvas.style.transition = 'none';
+  canvas.style.transform = '';
+  canvas.querySelectorAll('.map-node, .detail-panel').forEach(n => n.remove());
+  if (detailConnectorPath) { detailConnectorPath.remove(); detailConnectorPath = null; }
   const svg = document.getElementById('map-lines');
   svg.innerHTML = '';
 
@@ -858,7 +872,7 @@ function renderMap() {
 
   centralNode = makeNode(true, 'my ideas', '', cx, cy, 'central');
   const central = centralNode;
-  container.appendChild(central);
+  canvas.appendChild(central);
 
   const defaultPositions = [
     { x: cx - 260, y: cy - 120 },
@@ -882,7 +896,7 @@ function renderMap() {
     const col  = TAG_COLORS[idea.tag] || '#7c7a90';
     const node = makeNode(false, idea.title, idea.tag, pos.x, pos.y, '', col, i);
     node.dataset.ideaId = idea.id;
-    container.appendChild(node);
+    canvas.appendChild(node);
 
     const pathEl = makePath(svg, col);
     refreshConnector(pathEl, central, node);
@@ -920,8 +934,10 @@ function showDetail(id, nodeEl) {
   const container = document.getElementById('map-view');
   const svg = document.getElementById('map-lines');
 
+  const canvas = document.getElementById('map-canvas');
+
   // Toggle off if already open for this idea
-  const existing = container.querySelector('.detail-panel');
+  const existing = canvas.querySelector('.detail-panel');
   if (existing) {
     existing.remove();
     if (detailConnectorPath) { detailConnectorPath.remove(); detailConnectorPath = null; }
@@ -963,11 +979,34 @@ function showDetail(id, nodeEl) {
     </div>
     <button class="detail-delete" onclick="deleteIdea(${id})">delete idea</button>
   `;
-  container.appendChild(panel);
+  canvas.appendChild(panel);
 
   // Draw connector from clicked node to detail panel
   detailConnectorPath = makePath(svg, col);
   refreshConnector(detailConnectorPath, nodeEl, panel);
+
+  // Pan canvas so the detail panel is fully visible
+  requestAnimationFrame(() => {
+    const MARGIN = 16;
+    const cW = container.offsetWidth;
+    const cH = container.offsetHeight;
+    const matrix = new DOMMatrix(getComputedStyle(canvas).transform);
+    const curX = matrix.m41;
+    const curY = matrix.m42;
+    const pL = parseFloat(panel.style.left) + curX;
+    const pT = parseFloat(panel.style.top)  + curY;
+    const pR = pL + panel.offsetWidth;
+    const pB = pT + panel.offsetHeight;
+    let shiftX = 0, shiftY = 0;
+    if (pR > cW - MARGIN) shiftX = cW - MARGIN - pR;
+    if (pL < MARGIN)      shiftX = MARGIN - pL;
+    if (pB > cH - MARGIN) shiftY = cH - MARGIN - pB;
+    if (pT < MARGIN)      shiftY = MARGIN - pT;
+    if (shiftX || shiftY) {
+      canvas.style.transition = 'transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+      canvas.style.transform = `translate(${curX + shiftX}px, ${curY + shiftY}px)`;
+    }
+  });
 }
 
 function closeDetail() {
