@@ -474,29 +474,47 @@
     z-index: 0;
   }
 
-  /* DETAIL NODE */
-  .detail-node {
+  /* DETAIL PANEL (floating, shown on node click) */
+  .detail-panel {
     position: absolute;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 14px;
     padding: 18px 20px;
     width: 220px;
-    z-index: 2;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.09);
-    animation: nodeIn 0.35s ease backwards;
+    z-index: 15;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    animation: nodeIn 0.2s ease backwards;
   }
 
-  .detail-node .detail-title {
+  .detail-panel .detail-close {
+    position: absolute;
+    top: 10px; right: 12px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 18px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+  }
+  .detail-panel .detail-close:hover { color: var(--text); }
+
+  .map-node.selected {
+    box-shadow: 0 0 0 2px var(--accent), 0 5px 18px rgba(0,0,0,0.13);
+  }
+
+  .detail-panel .detail-title {
     font-family: 'Fraunces', serif;
     font-size: 15px;
     font-weight: 500;
     color: var(--text);
     margin-bottom: 10px;
     line-height: 1.35;
+    padding-right: 20px;
   }
 
-  .detail-node .detail-body {
+  .detail-panel .detail-body {
     font-size: 11px;
     color: var(--muted);
     line-height: 1.65;
@@ -517,13 +535,6 @@
 
   .detail-meta-row span:first-child { color: var(--muted); }
   .detail-meta-row span:last-child  { color: var(--text); font-weight: 500; }
-
-  .back-hint {
-    font-size: 10px;
-    color: rgba(255,255,255,0.7);
-    margin-top: 4px;
-    letter-spacing: 0.03em;
-  }
 
   /* TOAST */
   .toast {
@@ -680,6 +691,9 @@ let ideas = [
 let currentView = 'map';
 let currentFilter = 'all';
 let selectedTag = null;
+let nodePositions = {}; // persists dragged positions per idea id
+let centralNode = null;
+let detailConnectorPath = null;
 
 function setView(v) {
   currentView = v;
@@ -783,6 +797,9 @@ function makeDraggable(el, connectedPaths, onClick) {
       el.style.zIndex  = 2;
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup',   onUp);
+      if (el.dataset.ideaId) {
+        nodePositions[el.dataset.ideaId] = { x: parseInt(el.style.left), y: parseInt(el.style.top) };
+      }
       if (!dragged && onClick) onClick();
     }
 
@@ -806,7 +823,7 @@ function makePath(svg, col, neutral = false) {
 
 function renderMap() {
   const container = document.getElementById('map-view');
-  container.querySelectorAll('.map-node, .detail-node').forEach(n => n.remove());
+  container.querySelectorAll('.map-node, .detail-panel').forEach(n => n.remove());
   const svg = document.getElementById('map-lines');
   svg.innerHTML = '';
 
@@ -815,10 +832,11 @@ function renderMap() {
   const cx = W / 2 - 90;
   const cy = H / 2 - 50;
 
-  const central = makeNode(true, 'my ideas', '', cx, cy, 'central');
+  centralNode = makeNode(true, 'my ideas', '', cx, cy, 'central');
+  const central = centralNode;
   container.appendChild(central);
 
-  const positions = [
+  const defaultPositions = [
     { x: cx - 260, y: cy - 120 },
     { x: cx + 100, y: cy - 150 },
     { x: cx - 280, y: cy + 80 },
@@ -834,17 +852,18 @@ function renderMap() {
   const centralPaths = [];
 
   visibleIdeas.forEach((idea, i) => {
-    if (!positions[i]) return;
+    const pos = nodePositions[idea.id] || defaultPositions[i];
+    if (!pos) return;
     const col  = TAG_COLORS[idea.tag] || '#7c7a90';
-    const node = makeNode(false, idea.title, idea.tag, positions[i].x, positions[i].y, '', col, i);
+    const node = makeNode(false, idea.title, idea.tag, pos.x, pos.y, '', col, i);
+    node.dataset.ideaId = idea.id;
     container.appendChild(node);
 
     const pathEl = makePath(svg, col);
     refreshConnector(pathEl, central, node);
 
-    // Central drags all its paths as source; satellite drags its own path as target
     centralPaths.push({ pathEl, otherEl: node, isSource: true });
-    makeDraggable(node, [{ pathEl, otherEl: central, isSource: false }], () => focusNode(idea.id));
+    makeDraggable(node, [{ pathEl, otherEl: central, isSource: false }], () => showDetail(idea.id, node));
   });
 
   makeDraggable(central, centralPaths, null);
@@ -867,40 +886,49 @@ function makeNode(central, title, tag, x, y, extraClass = '', col = '', idx = 0,
   return el;
 }
 
-// ── Focus view ────────────────────────────────────────────────────────────────
+// ── Detail panel (shown in-place on node click) ───────────────────────────────
 
-function focusNode(id) {
+function showDetail(id, nodeEl) {
   const idea = ideas.find(i => i.id === id);
   if (!idea) return;
   const col = TAG_COLORS[idea.tag] || '#7c7a90';
-
   const container = document.getElementById('map-view');
-  container.querySelectorAll('.map-node, .detail-node').forEach(n => n.remove());
   const svg = document.getElementById('map-lines');
-  svg.innerHTML = '';
 
-  const W = container.offsetWidth;
-  const H = container.offsetHeight;
+  // Toggle off if already open for this idea
+  const existing = container.querySelector('.detail-panel');
+  if (existing) {
+    existing.remove();
+    if (detailConnectorPath) { detailConnectorPath.remove(); detailConnectorPath = null; }
+    document.querySelectorAll('.map-node.selected').forEach(n => n.classList.remove('selected'));
+    if (existing.dataset.ideaId === String(id)) return;
+  }
 
-  // Back node — top left
-  const back = makeNode(true, 'my ideas', '', 40, 40, 'central', '', 0, 'click to go back');
-  back.style.animationDelay = '0s';
-  container.appendChild(back);
+  // Highlight selected node
+  document.querySelectorAll('.map-node.selected').forEach(n => n.classList.remove('selected'));
+  nodeEl.classList.add('selected');
 
-  // Focused idea node — left of centre
-  const nx = W / 2 - 240;
-  const ny = H / 2 - 40;
-  const node = makeNode(false, idea.title, idea.tag, nx, ny, '', col, 0);
-  container.appendChild(node);
+  // Direction vector from central node to clicked node
+  const [ncx, ncy] = nodeCenter(nodeEl);
+  const [ccx, ccy] = nodeCenter(centralNode);
+  const dx = ncx - ccx;
+  const dy = ncy - ccy;
+  const len = Math.sqrt(dx * dx + dy * dy) || 1;
+  const dirX = dx / len;
+  const dirY = dy / len;
 
-  // Detail node — right of centre
-  const dx = W / 2 + 60;
-  const dy = H / 2 - 80;
-  const detail = document.createElement('div');
-  detail.className = 'detail-node';
-  detail.style.left = dx + 'px';
-  detail.style.top  = dy + 'px';
-  detail.innerHTML = `
+  // Place detail panel further out along the same direction
+  const DIST = 210;
+  const px = ncx + dirX * DIST - 110; // 110 = half of 220px panel width
+  const py = ncy + dirY * DIST - 50;  // 50 = approx half panel height
+
+  const panel = document.createElement('div');
+  panel.className = 'detail-panel';
+  panel.dataset.ideaId = String(id);
+  panel.style.left = px + 'px';
+  panel.style.top  = py + 'px';
+  panel.innerHTML = `
+    <button class="detail-close" onclick="closeDetail()">×</button>
     <div class="detail-title">${idea.title}</div>
     <div class="detail-body">${idea.body}</div>
     <div class="detail-meta">
@@ -909,17 +937,18 @@ function focusNode(id) {
       <div class="detail-meta-row"><span>added</span><span>${idea.date}</span></div>
     </div>
   `;
-  container.appendChild(detail);
+  container.appendChild(panel);
 
-  const backPath   = makePath(svg, col, true);
-  const detailPath = makePath(svg, col);
-  refreshConnector(backPath,   back, node);
-  refreshConnector(detailPath, node, detail);
+  // Draw connector from clicked node to detail panel
+  detailConnectorPath = makePath(svg, col);
+  refreshConnector(detailConnectorPath, nodeEl, panel);
+}
 
-  makeDraggable(back,   [{ pathEl: backPath,   otherEl: node,   isSource: true  }], () => renderMap());
-  makeDraggable(node,   [{ pathEl: backPath,   otherEl: back,   isSource: false },
-                         { pathEl: detailPath, otherEl: detail, isSource: true  }], null);
-  makeDraggable(detail, [{ pathEl: detailPath, otherEl: node,   isSource: false }], null);
+function closeDetail() {
+  const panel = document.querySelector('.detail-panel');
+  if (panel) panel.remove();
+  if (detailConnectorPath) { detailConnectorPath.remove(); detailConnectorPath = null; }
+  document.querySelectorAll('.map-node.selected').forEach(n => n.classList.remove('selected'));
 }
 
 let selTag = null;
