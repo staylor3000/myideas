@@ -734,7 +734,7 @@ function renderGrid(query = '') {
 function renderMap() {
   const container = document.getElementById('map-view');
   // remove old nodes
-  container.querySelectorAll('.map-node').forEach(n => n.remove());
+  container.querySelectorAll('.map-node, .detail-node').forEach(n => n.remove());
   const svg = document.getElementById('map-lines');
   svg.innerHTML = '';
 
@@ -807,7 +807,7 @@ function focusNode(id) {
   const col = TAG_COLORS[idea.tag] || '#7c7a90';
 
   const container = document.getElementById('map-view');
-  container.querySelectorAll('.map-node').forEach(n => n.remove());
+  container.querySelectorAll('.map-node, .detail-node').forEach(n => n.remove());
   const svg = document.getElementById('map-lines');
   svg.innerHTML = '';
 
