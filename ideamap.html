@@ -474,6 +474,57 @@
     z-index: 0;
   }
 
+  /* DETAIL NODE */
+  .detail-node {
+    position: absolute;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    width: 220px;
+    z-index: 2;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.09);
+    animation: nodeIn 0.35s ease backwards;
+  }
+
+  .detail-node .detail-title {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 10px;
+    line-height: 1.35;
+  }
+
+  .detail-node .detail-body {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.65;
+    margin-bottom: 14px;
+  }
+
+  .detail-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .detail-meta-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+  }
+
+  .detail-meta-row span:first-child { color: var(--muted); }
+  .detail-meta-row span:last-child  { color: var(--text); font-weight: 500; }
+
+  .back-hint {
+    font-size: 10px;
+    color: rgba(255,255,255,0.7);
+    margin-top: 4px;
+    letter-spacing: 0.03em;
+  }
+
   /* TOAST */
   .toast {
     position: fixed;
@@ -712,7 +763,7 @@ function renderMap() {
   visibleIdeas.forEach((idea, i) => {
     if (!positions[i]) return;
     const col = TAG_COLORS[idea.tag] || '#7c7a90';
-    const node = makeNode(false, idea.title, idea.tag, positions[i].x, positions[i].y, '', col, i);
+    const node = makeNode(false, idea.title, idea.tag, positions[i].x, positions[i].y, '', col, i, idea.id);
     container.appendChild(node);
 
     // draw curved connector
@@ -730,7 +781,7 @@ function renderMap() {
   });
 }
 
-function makeNode(central, title, tag, x, y, extraClass = '', col = '#c8f060', idx = 0) {
+function makeNode(central, title, tag, x, y, extraClass = '', col = '#c8f060', idx = 0, ideaId = null) {
   const el = document.createElement('div');
   el.className = 'map-node' + (central ? ' central' : '') + (extraClass ? ' ' + extraClass : '');
   el.style.left = x + 'px';
@@ -742,12 +793,69 @@ function makeNode(central, title, tag, x, y, extraClass = '', col = '#c8f060', i
   el.innerHTML = `
     ${tag ? `<div class="node-label" style="color:${col}">${tag}</div>` : ''}
     <div class="node-title">${title}</div>
+    ${central ? '<div class="back-hint">click to go back</div>' : ''}
   `;
+  if (!central && ideaId !== null) {
+    el.onclick = () => focusNode(ideaId);
+  }
   return el;
 }
 
-function openCard(id) {
-  showToast('✦ idea opened');
+function focusNode(id) {
+  const idea = ideas.find(i => i.id === id);
+  if (!idea) return;
+  const col = TAG_COLORS[idea.tag] || '#7c7a90';
+
+  const container = document.getElementById('map-view');
+  container.querySelectorAll('.map-node').forEach(n => n.remove());
+  const svg = document.getElementById('map-lines');
+  svg.innerHTML = '';
+
+  const W = container.offsetWidth;
+  const H = container.offsetHeight;
+
+  // Focused idea node — left of centre
+  const nx = W / 2 - 240;
+  const ny = H / 2 - 40;
+  const node = makeNode(false, idea.title, idea.tag, nx, ny, '', col, 0);
+  container.appendChild(node);
+
+  // Detail node — right of centre
+  const dx = W / 2 + 60;
+  const dy = H / 2 - 80;
+  const detail = document.createElement('div');
+  detail.className = 'detail-node';
+  detail.style.left = dx + 'px';
+  detail.style.top = dy + 'px';
+  detail.innerHTML = `
+    <div class="detail-title">${idea.title}</div>
+    <div class="detail-body">${idea.body}</div>
+    <div class="detail-meta">
+      <div class="detail-meta-row"><span>category</span><span style="color:${col}">${idea.tag}</span></div>
+      <div class="detail-meta-row"><span>status</span><span>${idea.status}</span></div>
+      <div class="detail-meta-row"><span>added</span><span>${idea.date}</span></div>
+    </div>
+  `;
+  container.appendChild(detail);
+
+  // Connector between the two
+  const x1 = nx + 160; const y1 = ny + 28;
+  const x2 = dx;       const y2 = dy + 60;
+  const mx = (x1 + x2) / 2;
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', `M ${x1} ${y1} C ${mx} ${y1} ${mx} ${y2} ${x2} ${y2}`);
+  path.setAttribute('stroke', col);
+  path.setAttribute('stroke-width', '1.5');
+  path.setAttribute('stroke-opacity', '0.4');
+  path.setAttribute('stroke-dasharray', '5 4');
+  path.setAttribute('fill', 'none');
+  svg.appendChild(path);
+
+  // Back node — top left
+  const back = makeNode(true, 'my ideas', '', 40, 40, 'central');
+  back.style.animationDelay = '0s';
+  back.onclick = () => renderMap();
+  container.appendChild(back);
 }
 
 let selTag = null;
