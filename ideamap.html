@@ -644,7 +644,8 @@ function filterTag(tag, el) {
   currentFilter = tag;
   document.querySelectorAll('.tag-item').forEach(x => x.classList.remove('active'));
   el.classList.add('active');
-  renderGrid();
+  if (currentView === 'map') renderMap();
+  else renderGrid();
 }
 
 function searchIdeas(q) {
@@ -704,7 +705,11 @@ function renderMap() {
     { x: cx + 260, y: cy - 20 },
   ];
 
-  ideas.forEach((idea, i) => {
+  const visibleIdeas = currentFilter === 'all'
+    ? ideas
+    : ideas.filter(i => i.tag === currentFilter || i.status === currentFilter);
+
+  visibleIdeas.forEach((idea, i) => {
     if (!positions[i]) return;
     const col = TAG_COLORS[idea.tag] || '#7c7a90';
     const node = makeNode(false, idea.title, idea.tag, positions[i].x, positions[i].y, '', col, i);
