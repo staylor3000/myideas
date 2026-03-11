@@ -731,9 +731,81 @@ function renderGrid(query = '') {
   }).join('');
 }
 
+// ── Drag helpers ──────────────────────────────────────────────────────────────
+
+function nodeCenter(el) {
+  return [
+    parseInt(el.style.left) + (el.offsetWidth  || 160) / 2,
+    parseInt(el.style.top)  + (el.offsetHeight || 56)  / 2,
+  ];
+}
+
+function refreshConnector(pathEl, fromEl, toEl) {
+  const [x1, y1] = nodeCenter(fromEl);
+  const [x2, y2] = nodeCenter(toEl);
+  const mx = (x1 + x2) / 2;
+  pathEl.setAttribute('d', `M ${x1} ${y1} C ${mx} ${y1} ${mx} ${y2} ${x2} ${y2}`);
+}
+
+// connectedPaths: [{ pathEl, otherEl, isSource }]
+// isSource: true  → this el is the FROM end of the path
+// onClick fires only if the mouse barely moved (click not drag)
+function makeDraggable(el, connectedPaths, onClick) {
+  el.style.cursor = 'grab';
+  el.addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
+    e.stopPropagation();
+    e.preventDefault();
+
+    const startMouseX = e.clientX;
+    const startMouseY = e.clientY;
+    const startLeft   = parseInt(el.style.left);
+    const startTop    = parseInt(el.style.top);
+    let dragged = false;
+
+    el.style.cursor = 'grabbing';
+    el.style.zIndex  = 20;
+
+    function onMove(e) {
+      const dx = e.clientX - startMouseX;
+      const dy = e.clientY - startMouseY;
+      if (!dragged && (Math.abs(dx) > 3 || Math.abs(dy) > 3)) dragged = true;
+      el.style.left = (startLeft + dx) + 'px';
+      el.style.top  = (startTop  + dy) + 'px';
+      connectedPaths.forEach(({ pathEl, otherEl, isSource }) => {
+        isSource ? refreshConnector(pathEl, el, otherEl)
+                 : refreshConnector(pathEl, otherEl, el);
+      });
+    }
+
+    function onUp() {
+      el.style.cursor = 'grab';
+      el.style.zIndex  = 2;
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup',   onUp);
+      if (!dragged && onClick) onClick();
+    }
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup',   onUp);
+  });
+}
+
+function makePath(svg, col, neutral = false) {
+  const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  p.setAttribute('stroke', neutral ? '#c8c0b4' : col);
+  p.setAttribute('stroke-width', '1.5');
+  p.setAttribute('stroke-opacity', neutral ? '0.5' : '0.4');
+  p.setAttribute('stroke-dasharray', '5 4');
+  p.setAttribute('fill', 'none');
+  svg.appendChild(p);
+  return p;
+}
+
+// ── Map render ────────────────────────────────────────────────────────────────
+
 function renderMap() {
   const container = document.getElementById('map-view');
-  // remove old nodes
   container.querySelectorAll('.map-node, .detail-node').forEach(n => n.remove());
   const svg = document.getElementById('map-lines');
   svg.innerHTML = '';
@@ -743,7 +815,6 @@ function renderMap() {
   const cx = W / 2 - 90;
   const cy = H / 2 - 50;
 
-  // Central node
   const central = makeNode(true, 'my ideas', '', cx, cy, 'central');
   container.appendChild(central);
 
@@ -752,54 +823,51 @@ function renderMap() {
     { x: cx + 100, y: cy - 150 },
     { x: cx - 280, y: cy + 80 },
     { x: cx + 110, y: cy + 70 },
-    { x: cx - 80, y: cy + 180 },
-    { x: cx + 260, y: cy - 20 },
+    { x: cx - 80,  y: cy + 180 },
+    { x: cx + 260, y: cy - 20  },
   ];
 
   const visibleIdeas = currentFilter === 'all'
     ? ideas
     : ideas.filter(i => i.tag === currentFilter || i.status === currentFilter);
 
+  const centralPaths = [];
+
   visibleIdeas.forEach((idea, i) => {
     if (!positions[i]) return;
-    const col = TAG_COLORS[idea.tag] || '#7c7a90';
-    const node = makeNode(false, idea.title, idea.tag, positions[i].x, positions[i].y, '', col, i, idea.id);
+    const col  = TAG_COLORS[idea.tag] || '#7c7a90';
+    const node = makeNode(false, idea.title, idea.tag, positions[i].x, positions[i].y, '', col, i);
     container.appendChild(node);
 
-    // draw curved connector
-    const x1 = cx + 90; const y1 = cy + 28;
-    const x2 = positions[i].x + 90; const y2 = positions[i].y + 28;
-    const mx = (x1 + x2) / 2;
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', `M ${x1} ${y1} C ${mx} ${y1} ${mx} ${y2} ${x2} ${y2}`);
-    path.setAttribute('stroke', col);
-    path.setAttribute('stroke-width', '1.5');
-    path.setAttribute('stroke-opacity', '0.4');
-    path.setAttribute('stroke-dasharray', '5 4');
-    path.setAttribute('fill', 'none');
-    svg.appendChild(path);
+    const pathEl = makePath(svg, col);
+    refreshConnector(pathEl, central, node);
+
+    // Central drags all its paths as source; satellite drags its own path as target
+    centralPaths.push({ pathEl, otherEl: node, isSource: true });
+    makeDraggable(node, [{ pathEl, otherEl: central, isSource: false }], () => focusNode(idea.id));
   });
+
+  makeDraggable(central, centralPaths, null);
 }
 
-function makeNode(central, title, tag, x, y, extraClass = '', col = '#c8f060', idx = 0, ideaId = null) {
+// ── Node factory ──────────────────────────────────────────────────────────────
+
+function makeNode(central, title, tag, x, y, extraClass = '', col = '', idx = 0, hint = '') {
   const el = document.createElement('div');
   el.className = 'map-node' + (central ? ' central' : '') + (extraClass ? ' ' + extraClass : '');
   el.style.left = x + 'px';
-  el.style.top = y + 'px';
+  el.style.top  = y + 'px';
   el.style.animationDelay = (idx * 0.06 + 0.1) + 's';
-  if (!central && col) {
-    el.style.borderTop = `2px solid ${col}`;
-  }
+  if (!central && col) el.style.borderTop = `2px solid ${col}`;
   el.innerHTML = `
-    ${tag ? `<div class="node-label" style="color:${col}">${tag}</div>` : ''}
+    ${tag  ? `<div class="node-label" style="color:${col}">${tag}</div>` : ''}
     <div class="node-title">${title}</div>
-    ${central ? '<div class="back-hint">click to go back</div>' : ''}
+    ${hint ? `<div class="back-hint">${hint}</div>` : ''}
   `;
-  if (!central && ideaId !== null) {
-    el.onclick = () => focusNode(ideaId);
-  }
   return el;
 }
+
+// ── Focus view ────────────────────────────────────────────────────────────────
 
 function focusNode(id) {
   const idea = ideas.find(i => i.id === id);
@@ -814,6 +882,11 @@ function focusNode(id) {
   const W = container.offsetWidth;
   const H = container.offsetHeight;
 
+  // Back node — top left
+  const back = makeNode(true, 'my ideas', '', 40, 40, 'central', '', 0, 'click to go back');
+  back.style.animationDelay = '0s';
+  container.appendChild(back);
+
   // Focused idea node — left of centre
   const nx = W / 2 - 240;
   const ny = H / 2 - 40;
@@ -826,7 +899,7 @@ function focusNode(id) {
   const detail = document.createElement('div');
   detail.className = 'detail-node';
   detail.style.left = dx + 'px';
-  detail.style.top = dy + 'px';
+  detail.style.top  = dy + 'px';
   detail.innerHTML = `
     <div class="detail-title">${idea.title}</div>
     <div class="detail-body">${idea.body}</div>
@@ -838,37 +911,15 @@ function focusNode(id) {
   `;
   container.appendChild(detail);
 
-  // Connector between the two
-  const x1 = nx + 160; const y1 = ny + 28;
-  const x2 = dx;       const y2 = dy + 60;
-  const mx = (x1 + x2) / 2;
-  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  path.setAttribute('d', `M ${x1} ${y1} C ${mx} ${y1} ${mx} ${y2} ${x2} ${y2}`);
-  path.setAttribute('stroke', col);
-  path.setAttribute('stroke-width', '1.5');
-  path.setAttribute('stroke-opacity', '0.4');
-  path.setAttribute('stroke-dasharray', '5 4');
-  path.setAttribute('fill', 'none');
-  svg.appendChild(path);
+  const backPath   = makePath(svg, col, true);
+  const detailPath = makePath(svg, col);
+  refreshConnector(backPath,   back, node);
+  refreshConnector(detailPath, node, detail);
 
-  // Back node — top left
-  const back = makeNode(true, 'my ideas', '', 40, 40, 'central');
-  back.style.animationDelay = '0s';
-  back.onclick = () => renderMap();
-  container.appendChild(back);
-
-  // Connector from back node to idea node
-  const bx1 = 40 + 90; const by1 = 40 + 28;
-  const bx2 = nx;       const by2 = ny + 28;
-  const bmx = (bx1 + bx2) / 2;
-  const backPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  backPath.setAttribute('d', `M ${bx1} ${by1} C ${bmx} ${by1} ${bmx} ${by2} ${bx2} ${by2}`);
-  backPath.setAttribute('stroke', '#c8c0b4');
-  backPath.setAttribute('stroke-width', '1.5');
-  backPath.setAttribute('stroke-opacity', '0.5');
-  backPath.setAttribute('stroke-dasharray', '5 4');
-  backPath.setAttribute('fill', 'none');
-  svg.appendChild(backPath);
+  makeDraggable(back,   [{ pathEl: backPath,   otherEl: node,   isSource: true  }], () => renderMap());
+  makeDraggable(node,   [{ pathEl: backPath,   otherEl: back,   isSource: false },
+                         { pathEl: detailPath, otherEl: detail, isSource: true  }], null);
+  makeDraggable(detail, [{ pathEl: detailPath, otherEl: node,   isSource: false }], null);
 }
 
 let selTag = null;
