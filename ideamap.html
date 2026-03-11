@@ -732,7 +732,7 @@ function makeNode(central, title, tag, x, y, extraClass = '', col = '#c8f060', i
   el.style.top = y + 'px';
   el.style.animationDelay = (idx * 0.06 + 0.1) + 's';
   if (!central && col) {
-    el.style.background = `${col}18`;
+    el.style.borderTop = `2px solid ${col}`;
   }
   el.innerHTML = `
     ${tag ? `<div class="node-label" style="color:${col}">${tag}</div>` : ''}
