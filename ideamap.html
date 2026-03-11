@@ -856,6 +856,19 @@ function focusNode(id) {
   back.style.animationDelay = '0s';
   back.onclick = () => renderMap();
   container.appendChild(back);
+
+  // Connector from back node to idea node
+  const bx1 = 40 + 90; const by1 = 40 + 28;
+  const bx2 = nx;       const by2 = ny + 28;
+  const bmx = (bx1 + bx2) / 2;
+  const backPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  backPath.setAttribute('d', `M ${bx1} ${by1} C ${bmx} ${by1} ${bmx} ${by2} ${bx2} ${by2}`);
+  backPath.setAttribute('stroke', '#c8c0b4');
+  backPath.setAttribute('stroke-width', '1.5');
+  backPath.setAttribute('stroke-opacity', '0.5');
+  backPath.setAttribute('stroke-dasharray', '5 4');
+  backPath.setAttribute('fill', 'none');
+  svg.appendChild(backPath);
 }
 
 let selTag = null;
