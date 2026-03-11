@@ -775,8 +775,14 @@ function nodeCenter(el) {
 function refreshConnector(pathEl, fromEl, toEl) {
   const [x1, y1] = nodeCenter(fromEl);
   const [x2, y2] = nodeCenter(toEl);
-  const mx = (x1 + x2) / 2;
-  pathEl.setAttribute('d', `M ${x1} ${y1} C ${mx} ${y1} ${mx} ${y2} ${x2} ${y2}`);
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const len = Math.sqrt(dx * dx + dy * dy) || 1;
+  // Bow the midpoint perpendicularly (left of direction of travel)
+  const arc = Math.min(len * 0.18, 55);
+  const cx = (x1 + x2) / 2 + (-dy / len) * arc;
+  const cy = (y1 + y2) / 2 + ( dx / len) * arc;
+  pathEl.setAttribute('d', `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`);
 }
 
 // connectedPaths: [{ pathEl, otherEl, isSource }]
