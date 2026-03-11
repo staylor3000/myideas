@@ -999,6 +999,7 @@ function saveIdea() {
   });
   updateCounts();
   renderGrid();
+  if (currentView === 'map') renderMap();
   closeModal();
   showToast('✦ idea saved');
 }
