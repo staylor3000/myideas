@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IdeaMap — Your thinking space</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,500;0,700;1,300&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f3ee;
+    --surface: #ffffff;
+    --surface2: #f0ede6;
+    --border: #e2ddd5;
+    --text: #1a1814;
+    --muted: #9a9389;
+    --accent: #2d6a2d;
+    --accent2: #c4365a;
+    --accent3: #1e6a9a;
+    --accent4: #b06a10;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* TOP BAR */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+  .logo span { color: var(--muted); font-weight: 300; font-style: italic; }
+
+  .topbar-actions { display: flex; gap: 10px; align-items: center; }
+
+  .view-toggle {
+    display: flex;
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 3px;
+    gap: 2px;
+  }
+
+  .view-btn {
+    padding: 5px 14px;
+    border: none;
+    background: none;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .view-btn.active { background: var(--border); color: var(--text); }
+
+  .add-btn {
+    background: var(--accent);
+    color: #ffffff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .add-btn:hover { background: #3a8a3a; transform: translateY(-1px); }
+
+  /* MAIN LAYOUT */
+  .main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 200px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .sidebar-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    padding: 4px 8px 8px;
+  }
+
+  .tag-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+  .tag-item:hover { background: var(--surface2); color: var(--text); }
+  .tag-item.active { background: var(--surface2); color: var(--text); }
+
+  .tag-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .tag-count {
+    margin-left: auto;
+    font-size: 10px;
+    color: var(--muted);
+    background: var(--surface2);
+    padding: 1px 6px;
+    border-radius: 10px;
+  }
+  .tag-item.active .tag-count { background: var(--border); }
+
+  .sidebar-divider { height: 1px; background: var(--border); margin: 8px 0; }
+
+  /* CONTENT AREA */
+  .content {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* GRID VIEW */
+  .grid-view {
+    padding: 24px;
+    overflow-y: auto;
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+    align-content: start;
+  }
+
+  .idea-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+    animation: cardIn 0.3s ease backwards;
+  }
+
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .idea-card:nth-child(1) { animation-delay: 0.05s; }
+  .idea-card:nth-child(2) { animation-delay: 0.10s; }
+  .idea-card:nth-child(3) { animation-delay: 0.15s; }
+  .idea-card:nth-child(4) { animation-delay: 0.20s; }
+  .idea-card:nth-child(5) { animation-delay: 0.25s; }
+  .idea-card:nth-child(6) { animation-delay: 0.30s; }
+
+  .idea-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .idea-card:hover {
+    border-color: #c8c0b4;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+  }
+
+  .card-tag {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 10px;
+    font-weight: 400;
+  }
+
+  .card-title {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.35;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  .card-body {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .card-date { font-size: 10px; color: var(--muted); }
+
+  .card-status {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  /* MAP VIEW */
+  .map-view {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    cursor: grab;
+    background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+  .map-view:active { cursor: grabbing; }
+
+  #map-canvas {
+    position: absolute;
+    top: 0; left: 0;
+  }
+
+  .map-node {
+    position: absolute;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    min-width: 140px;
+    max-width: 180px;
+    z-index: 2;
+    animation: nodeIn 0.4s ease backwards;
+  }
+
+  @keyframes nodeIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .map-node:hover {
+    border-color: #c8c0b4;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    transform: scale(1.04);
+    z-index: 10;
+  }
+
+  .map-node.central {
+    background: var(--accent);
+    border-color: var(--accent);
+    padding: 16px 20px;
+  }
+
+  .node-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 5px;
+  }
+
+  .node-title {
+    font-family: 'Fraunces', serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.3;
+    color: var(--text);
+  }
+
+  .map-node.central .node-title {
+    font-size: 16px;
+    color: #ffffff;
+  }
+
+  /* MODAL / NEW IDEA */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(26,24,20,0.4);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    width: 480px;
+    transform: translateY(20px);
+    transition: transform 0.2s;
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+
+  .modal-title {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 500;
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .field input, .field textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.15s;
+    resize: none;
+  }
+  .field input:focus, .field textarea:focus { border-color: var(--accent); }
+
+  .tag-select {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .tag-option {
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--muted);
+    background: none;
+  }
+  .tag-option:hover { border-color: var(--muted); color: var(--text); }
+  .tag-option.selected { color: #0e0e10; border-color: transparent; }
+
+  .modal-actions { display: flex; gap: 10px; margin-top: 22px; justify-content: flex-end; }
+
+  .btn-cancel {
+    padding: 9px 20px;
+    border: 1px solid var(--border);
+    background: none;
+    color: var(--muted);
+    border-radius: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-cancel:hover { color: var(--text); border-color: var(--muted); }
+
+  .btn-save {
+    padding: 9px 20px;
+    background: var(--accent);
+    color: #0e0e10;
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-save:hover { background: #d4f570; }
+
+  /* SEARCH BAR */
+  .search-wrap {
+    padding: 14px 24px 0;
+    flex-shrink: 0;
+  }
+  .search-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 14px 9px 36px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    outline: none;
+    transition: border-color 0.15s;
+    position: relative;
+  }
+  .search-wrap { position: relative; }
+  .search-icon {
+    position: absolute;
+    left: 38px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 14px;
+    pointer-events: none;
+  }
+  .search-input:focus { border-color: var(--accent); }
+
+  /* CONTENT WRAPPER */
+  .content-inner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  /* SVG LINES for map */
+  .map-lines {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    background: var(--text);
+    color: #ffffff;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    transform: translateY(60px);
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 9999;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">idea<span>map</span></div>
+  <div class="topbar-actions">
+    <div class="view-toggle">
+      <button class="view-btn active" id="btn-grid" onclick="setView('grid')">grid</button>
+      <button class="view-btn" id="btn-map" onclick="setView('map')">mindmap</button>
+    </div>
+    <button class="add-btn" onclick="openModal()">+ new idea</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-label">Categories</div>
+    <div class="tag-item active" onclick="filterTag('all', this)">
+      <div class="tag-dot" style="background:#7c7a90"></div>
+      all ideas
+      <span class="tag-count" id="count-all">6</span>
+    </div>
+    <div class="tag-item" onclick="filterTag('product', this)">
+      <div class="tag-dot" style="background:#2d6a2d"></div>
+      product
+      <span class="tag-count" id="count-product">2</span>
+    </div>
+    <div class="tag-item" onclick="filterTag('design', this)">
+      <div class="tag-dot" style="background:#c4365a"></div>
+      design
+      <span class="tag-count" id="count-design">1</span>
+    </div>
+    <div class="tag-item" onclick="filterTag('tech', this)">
+      <div class="tag-dot" style="background:#1e6a9a"></div>
+      tech
+      <span class="tag-count" id="count-tech">2</span>
+    </div>
+    <div class="tag-item" onclick="filterTag('business', this)">
+      <div class="tag-dot" style="background:#b06a10"></div>
+      business
+      <span class="tag-count" id="count-business">1</span>
+    </div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-label">Status</div>
+    <div class="tag-item" onclick="filterTag('raw', this)">
+      <div class="tag-dot" style="background:#c8c0b4"></div>
+      raw
+      <span class="tag-count">3</span>
+    </div>
+    <div class="tag-item" onclick="filterTag('fleshed', this)">
+      <div class="tag-dot" style="background:#9a9389"></div>
+      fleshed out
+      <span class="tag-count">2</span>
+    </div>
+    <div class="tag-item" onclick="filterTag('active', this)">
+      <div class="tag-dot" style="background:#2d6a2d"></div>
+      active
+      <span class="tag-count">1</span>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+    <div class="content-inner">
+
+      <!-- SEARCH -->
+      <div class="search-wrap" id="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input class="search-input" placeholder="search ideas..." id="search-input" oninput="searchIdeas(this.value)">
+      </div>
+
+      <!-- GRID VIEW -->
+      <div class="grid-view" id="grid-view"></div>
+
+      <!-- MAP VIEW -->
+      <div class="map-view" id="map-view" style="display:none">
+        <svg class="map-lines" id="map-lines"></svg>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-title">capture an idea</div>
+    <div class="field">
+      <label>Title</label>
+      <input type="text" id="idea-title" placeholder="what's the idea?">
+    </div>
+    <div class="field">
+      <label>Notes</label>
+      <textarea id="idea-body" rows="3" placeholder="flesh it out a bit..."></textarea>
+    </div>
+    <div class="field">
+      <label>Category</label>
+      <div class="tag-select" id="tag-select">
+        <button class="tag-option" data-tag="product" onclick="selectTag(this)">product</button>
+        <button class="tag-option" data-tag="design" onclick="selectTag(this)">design</button>
+        <button class="tag-option" data-tag="tech" onclick="selectTag(this)">tech</button>
+        <button class="tag-option" data-tag="business" onclick="selectTag(this)">business</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">cancel</button>
+      <button class="btn-save" onclick="saveIdea()">save idea</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const TAG_COLORS = {
+  product: '#2d6a2d',
+  design: '#c4365a',
+  tech: '#1e6a9a',
+  business: '#b06a10',
+};
+
+let ideas = [
+  { id:1, title:'IdeaMap — the app itself', body:'A tool for capturing and visualising ideas with tags, mindmaps and smart resurfacing.', tag:'product', status:'active', date:'today' },
+  { id:2, title:'Fridge inventory tracker', body:'Scan receipts to auto-update what\'s in your fridge. Alert when things near expiry.', tag:'product', status:'fleshed', date:'2d ago' },
+  { id:3, title:'Ambient focus sounds', body:'Generative audio that adapts to your work rhythm — faster when you\'re in flow, slower when idle.', tag:'tech', status:'raw', date:'3d ago' },
+  { id:4, title:'Type-based card layouts', body:'Different card shapes for different idea types. Lists look different from concepts.', tag:'design', status:'fleshed', date:'5d ago' },
+  { id:5, title:'AI idea clustering', body:'Surface hidden connections between notes using embeddings. Group by semantic similarity not just tags.', tag:'tech', status:'raw', date:'1w ago' },
+  { id:6, title:'Idea licensing marketplace', body:'Sell or license your unused ideas to companies looking for innovation.', tag:'business', status:'raw', date:'1w ago' },
+];
+
+let currentView = 'map';
+let currentFilter = 'all';
+let selectedTag = null;
+
+function setView(v) {
+  currentView = v;
+  document.getElementById('btn-grid').classList.toggle('active', v === 'grid');
+  document.getElementById('btn-map').classList.toggle('active', v === 'map');
+  document.getElementById('grid-view').style.display = v === 'grid' ? 'grid' : 'none';
+  document.getElementById('map-view').style.display = v === 'map' ? 'block' : 'none';
+  document.getElementById('search-wrap').style.display = v === 'grid' ? 'block' : 'none';
+  if (v === 'map') renderMap();
+}
+
+function filterTag(tag, el) {
+  currentFilter = tag;
+  document.querySelectorAll('.tag-item').forEach(x => x.classList.remove('active'));
+  el.classList.add('active');
+  renderGrid();
+}
+
+function searchIdeas(q) {
+  renderGrid(q.toLowerCase());
+}
+
+function renderGrid(query = '') {
+  const container = document.getElementById('grid-view');
+  let filtered = ideas;
+  if (currentFilter !== 'all') {
+    filtered = filtered.filter(i => i.tag === currentFilter || i.status === currentFilter);
+  }
+  if (query) {
+    filtered = filtered.filter(i =>
+      i.title.toLowerCase().includes(query) || i.body.toLowerCase().includes(query)
+    );
+  }
+
+  container.innerHTML = filtered.map((idea, idx) => {
+    const col = TAG_COLORS[idea.tag] || '#7c7a90';
+    return `
+    <div class="idea-card" style="animation-delay:${idx*0.05}s" onclick="openCard(${idea.id})">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${col};border-radius:12px 12px 0 0"></div>
+      <span class="card-tag" style="background:${col}20;color:${col}">${idea.tag}</span>
+      <div class="card-title">${idea.title}</div>
+      <div class="card-body">${idea.body}</div>
+      <div class="card-footer">
+        <span class="card-date">${idea.date}</span>
+        <span class="card-status">${idea.status}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderMap() {
+  const container = document.getElementById('map-view');
+  // remove old nodes
+  container.querySelectorAll('.map-node').forEach(n => n.remove());
+  const svg = document.getElementById('map-lines');
+  svg.innerHTML = '';
+
+  const W = container.offsetWidth;
+  const H = container.offsetHeight;
+  const cx = W / 2 - 90;
+  const cy = H / 2 - 50;
+
+  // Central node
+  const central = makeNode(true, 'my ideas', '', cx, cy, 'central');
+  container.appendChild(central);
+
+  const positions = [
+    { x: cx - 260, y: cy - 120 },
+    { x: cx + 100, y: cy - 150 },
+    { x: cx - 280, y: cy + 80 },
+    { x: cx + 110, y: cy + 70 },
+    { x: cx - 80, y: cy + 180 },
+    { x: cx + 260, y: cy - 20 },
+  ];
+
+  ideas.forEach((idea, i) => {
+    if (!positions[i]) return;
+    const col = TAG_COLORS[idea.tag] || '#7c7a90';
+    const node = makeNode(false, idea.title, idea.tag, positions[i].x, positions[i].y, '', col, i);
+    container.appendChild(node);
+
+    // draw line
+    const x1 = cx + 90; const y1 = cy + 28;
+    const x2 = positions[i].x + 90; const y2 = positions[i].y + 28;
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+    line.setAttribute('stroke', col);
+    line.setAttribute('stroke-width', '1.5');
+    line.setAttribute('stroke-opacity', '0.3');
+    line.setAttribute('stroke-dasharray', '4 4');
+    svg.appendChild(line);
+  });
+}
+
+function makeNode(central, title, tag, x, y, extraClass = '', col = '#c8f060', idx = 0) {
+  const el = document.createElement('div');
+  el.className = 'map-node' + (central ? ' central' : '') + (extraClass ? ' ' + extraClass : '');
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  el.style.animationDelay = (idx * 0.06 + 0.1) + 's';
+  if (!central && col) {
+    el.style.borderTop = `2px solid ${col}`;
+  }
+  el.innerHTML = `
+    ${tag ? `<div class="node-label" style="color:${col}">${tag}</div>` : ''}
+    <div class="node-title">${title}</div>
+  `;
+  return el;
+}
+
+function openCard(id) {
+  showToast('✦ idea opened');
+}
+
+let selTag = null;
+function selectTag(btn) {
+  document.querySelectorAll('.tag-option').forEach(b => {
+    b.classList.remove('selected');
+    b.style.background = '';
+    b.style.color = '';
+  });
+  btn.classList.add('selected');
+  const col = TAG_COLORS[btn.dataset.tag];
+  btn.style.background = col;
+  btn.style.color = '#ffffff';
+  selTag = btn.dataset.tag;
+}
+
+function openModal() {
+  document.getElementById('modal').classList.add('open');
+  setTimeout(() => document.getElementById('idea-title').focus(), 200);
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  document.getElementById('idea-title').value = '';
+  document.getElementById('idea-body').value = '';
+  document.querySelectorAll('.tag-option').forEach(b => {
+    b.classList.remove('selected');
+    b.style.background = '';
+    b.style.color = '';
+  });
+  selTag = null;
+}
+
+function closeModalOutside(e) {
+  if (e.target.id === 'modal') closeModal();
+}
+
+function saveIdea() {
+  const title = document.getElementById('idea-title').value.trim();
+  if (!title) { showToast('⚠ add a title first'); return; }
+  ideas.unshift({
+    id: Date.now(),
+    title,
+    body: document.getElementById('idea-body').value.trim() || 'No notes yet.',
+    tag: selTag || 'product',
+    status: 'raw',
+    date: 'just now'
+  });
+  updateCounts();
+  renderGrid();
+  closeModal();
+  showToast('✦ idea saved');
+}
+
+function updateCounts() {
+  document.getElementById('count-all').textContent = ideas.length;
+  ['product','design','tech','business'].forEach(t => {
+    const el = document.getElementById('count-' + t);
+    if (el) el.textContent = ideas.filter(i => i.tag === t).length;
+  });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// init
+renderGrid();
+setView('map');
+</script>
+</body>
+</html>
