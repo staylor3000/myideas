@@ -270,39 +270,16 @@
   .map-node {
     position: absolute;
     background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 18px;
     padding: 14px 18px 12px;
     cursor: pointer;
-    transition: filter 0.2s, transform 0.2s;
+    transition: box-shadow 0.2s, transform 0.2s;
     min-width: 130px;
     max-width: 170px;
     z-index: 2;
-    overflow: visible;
     animation: nodeIn 0.4s ease backwards;
-    filter: drop-shadow(0 0 1px #d4cfc8) drop-shadow(0 2px 8px rgba(0,0,0,0.07));
-  }
-
-  /* Cloud bumps */
-  .map-node::before {
-    content: '';
-    position: absolute;
-    top: -20px;
-    left: 14px;
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
-    background: inherit;
-  }
-
-  .map-node::after {
-    content: '';
-    position: absolute;
-    top: -28px;
-    right: 16px;
-    width: 58px;
-    height: 58px;
-    border-radius: 50%;
-    background: inherit;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
   }
 
   @keyframes nodeIn {
@@ -311,13 +288,14 @@
   }
 
   .map-node:hover {
-    filter: drop-shadow(0 0 1.5px #b0a89e) drop-shadow(0 5px 18px rgba(0,0,0,0.13));
+    box-shadow: 0 5px 18px rgba(0,0,0,0.13);
     transform: scale(1.04);
     z-index: 10;
   }
 
   .map-node.central {
     background: var(--accent);
+    border-color: var(--accent);
     border-radius: 20px;
     padding: 16px 22px;
   }
@@ -493,7 +471,7 @@
     top: 0; left: 0;
     width: 100%; height: 100%;
     pointer-events: none;
-    z-index: 1;
+    z-index: 0;
   }
 
   /* TOAST */
