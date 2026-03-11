@@ -872,6 +872,7 @@ function renderMap() {
   visibleIdeas.forEach((idea, i) => {
     const pos = nodePositions[idea.id] || defaultPositions[i];
     if (!pos) return;
+    if (!nodePositions[idea.id]) nodePositions[idea.id] = pos; // lock in default position
     const col  = TAG_COLORS[idea.tag] || '#7c7a90';
     const node = makeNode(false, idea.title, idea.tag, pos.x, pos.y, '', col, i);
     node.dataset.ideaId = idea.id;
