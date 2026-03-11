@@ -500,6 +500,24 @@
   }
   .detail-panel .detail-close:hover { color: var(--text); }
 
+  .detail-panel .detail-delete {
+    display: block;
+    width: 100%;
+    margin-top: 14px;
+    padding: 7px 0;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .detail-panel .detail-delete:hover { border-color: var(--accent2); color: var(--accent2); }
+
   .map-node.selected {
     box-shadow: 0 0 0 2px var(--accent), 0 5px 18px rgba(0,0,0,0.13);
   }
@@ -936,6 +954,7 @@ function showDetail(id, nodeEl) {
       <div class="detail-meta-row"><span>status</span><span>${idea.status}</span></div>
       <div class="detail-meta-row"><span>added</span><span>${idea.date}</span></div>
     </div>
+    <button class="detail-delete" onclick="deleteIdea(${id})">delete idea</button>
   `;
   container.appendChild(panel);
 
@@ -949,6 +968,16 @@ function closeDetail() {
   if (panel) panel.remove();
   if (detailConnectorPath) { detailConnectorPath.remove(); detailConnectorPath = null; }
   document.querySelectorAll('.map-node.selected').forEach(n => n.classList.remove('selected'));
+}
+
+function deleteIdea(id) {
+  ideas = ideas.filter(i => i.id !== id);
+  delete nodePositions[id];
+  closeDetail();
+  updateCounts();
+  if (currentView === 'map') renderMap();
+  else renderGrid();
+  showToast('idea deleted');
 }
 
 let selTag = null;
