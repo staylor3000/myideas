@@ -692,6 +692,8 @@ let currentView = 'map';
 let currentFilter = 'all';
 let selectedTag = null;
 let nodePositions = {}; // persists dragged positions per idea id
+let centralNode = null;
+let detailConnectorPath = null;
 
 function setView(v) {
   currentView = v;
@@ -830,7 +832,8 @@ function renderMap() {
   const cx = W / 2 - 90;
   const cy = H / 2 - 50;
 
-  const central = makeNode(true, 'my ideas', '', cx, cy, 'central');
+  centralNode = makeNode(true, 'my ideas', '', cx, cy, 'central');
+  const central = centralNode;
   container.appendChild(central);
 
   const defaultPositions = [
@@ -890,11 +893,13 @@ function showDetail(id, nodeEl) {
   if (!idea) return;
   const col = TAG_COLORS[idea.tag] || '#7c7a90';
   const container = document.getElementById('map-view');
+  const svg = document.getElementById('map-lines');
 
   // Toggle off if already open for this idea
   const existing = container.querySelector('.detail-panel');
   if (existing) {
     existing.remove();
+    if (detailConnectorPath) { detailConnectorPath.remove(); detailConnectorPath = null; }
     document.querySelectorAll('.map-node.selected').forEach(n => n.classList.remove('selected'));
     if (existing.dataset.ideaId === String(id)) return;
   }
@@ -903,13 +908,19 @@ function showDetail(id, nodeEl) {
   document.querySelectorAll('.map-node.selected').forEach(n => n.classList.remove('selected'));
   nodeEl.classList.add('selected');
 
-  // Position panel to the right of node, or left if too close to edge
-  const nodeLeft = parseInt(nodeEl.style.left);
-  const nodeTop  = parseInt(nodeEl.style.top);
-  const W = container.offsetWidth;
-  let px = nodeLeft + (nodeEl.offsetWidth || 160) + 16;
-  if (px + 230 > W) px = nodeLeft - 246;
-  const py = nodeTop;
+  // Direction vector from central node to clicked node
+  const [ncx, ncy] = nodeCenter(nodeEl);
+  const [ccx, ccy] = nodeCenter(centralNode);
+  const dx = ncx - ccx;
+  const dy = ncy - ccy;
+  const len = Math.sqrt(dx * dx + dy * dy) || 1;
+  const dirX = dx / len;
+  const dirY = dy / len;
+
+  // Place detail panel further out along the same direction
+  const DIST = 210;
+  const px = ncx + dirX * DIST - 110; // 110 = half of 220px panel width
+  const py = ncy + dirY * DIST - 50;  // 50 = approx half panel height
 
   const panel = document.createElement('div');
   panel.className = 'detail-panel';
@@ -927,11 +938,16 @@ function showDetail(id, nodeEl) {
     </div>
   `;
   container.appendChild(panel);
+
+  // Draw connector from clicked node to detail panel
+  detailConnectorPath = makePath(svg, col);
+  refreshConnector(detailConnectorPath, nodeEl, panel);
 }
 
 function closeDetail() {
   const panel = document.querySelector('.detail-panel');
   if (panel) panel.remove();
+  if (detailConnectorPath) { detailConnectorPath.remove(); detailConnectorPath = null; }
   document.querySelectorAll('.map-node.selected').forEach(n => n.classList.remove('selected'));
 }
 
