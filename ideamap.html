@@ -270,15 +270,39 @@
   .map-node {
     position: absolute;
     background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 16px;
+    border-radius: 18px;
+    padding: 14px 18px 12px;
     cursor: pointer;
-    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
-    min-width: 140px;
-    max-width: 180px;
+    transition: filter 0.2s, transform 0.2s;
+    min-width: 130px;
+    max-width: 170px;
     z-index: 2;
+    overflow: visible;
     animation: nodeIn 0.4s ease backwards;
+    filter: drop-shadow(0 0 1px #d4cfc8) drop-shadow(0 2px 8px rgba(0,0,0,0.07));
+  }
+
+  /* Cloud bumps */
+  .map-node::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    left: 14px;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: inherit;
+  }
+
+  .map-node::after {
+    content: '';
+    position: absolute;
+    top: -28px;
+    right: 16px;
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: inherit;
   }
 
   @keyframes nodeIn {
@@ -287,16 +311,15 @@
   }
 
   .map-node:hover {
-    border-color: #c8c0b4;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    filter: drop-shadow(0 0 1.5px #b0a89e) drop-shadow(0 5px 18px rgba(0,0,0,0.13));
     transform: scale(1.04);
     z-index: 10;
   }
 
   .map-node.central {
     background: var(--accent);
-    border-color: var(--accent);
-    padding: 16px 20px;
+    border-radius: 20px;
+    padding: 16px 22px;
   }
 
   .node-label {
@@ -709,17 +732,18 @@ function renderMap() {
     const node = makeNode(false, idea.title, idea.tag, positions[i].x, positions[i].y, '', col, i);
     container.appendChild(node);
 
-    // draw line
+    // draw curved connector
     const x1 = cx + 90; const y1 = cy + 28;
     const x2 = positions[i].x + 90; const y2 = positions[i].y + 28;
-    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line.setAttribute('x1', x1); line.setAttribute('y1', y1);
-    line.setAttribute('x2', x2); line.setAttribute('y2', y2);
-    line.setAttribute('stroke', col);
-    line.setAttribute('stroke-width', '1.5');
-    line.setAttribute('stroke-opacity', '0.3');
-    line.setAttribute('stroke-dasharray', '4 4');
-    svg.appendChild(line);
+    const mx = (x1 + x2) / 2;
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', `M ${x1} ${y1} C ${mx} ${y1} ${mx} ${y2} ${x2} ${y2}`);
+    path.setAttribute('stroke', col);
+    path.setAttribute('stroke-width', '1.5');
+    path.setAttribute('stroke-opacity', '0.4');
+    path.setAttribute('stroke-dasharray', '5 4');
+    path.setAttribute('fill', 'none');
+    svg.appendChild(path);
   });
 }
 
@@ -730,7 +754,7 @@ function makeNode(central, title, tag, x, y, extraClass = '', col = '#c8f060', i
   el.style.top = y + 'px';
   el.style.animationDelay = (idx * 0.06 + 0.1) + 's';
   if (!central && col) {
-    el.style.borderTop = `2px solid ${col}`;
+    el.style.background = `${col}18`;
   }
   el.innerHTML = `
     ${tag ? `<div class="node-label" style="color:${col}">${tag}</div>` : ''}
