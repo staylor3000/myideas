@@ -43,14 +43,47 @@
     z-index: 100;
   }
 
+  .topbar-left { display: flex; align-items: center; gap: 18px; }
+
   .logo {
     font-family: 'Fraunces', serif;
     font-size: 20px;
     font-weight: 700;
     color: var(--accent);
     letter-spacing: -0.5px;
+    white-space: nowrap;
   }
   .logo span { color: var(--muted); font-weight: 300; font-style: italic; }
+
+  /* BREADCRUMB */
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+  }
+  .bc-home {
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 0.15s;
+    white-space: nowrap;
+  }
+  .bc-home:hover { color: var(--text); }
+  .bc-sep { color: var(--muted); font-size: 11px; }
+  .bc-current { color: var(--text); font-weight: 500; }
+  .bc-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 0.15s;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 5px;
+    border: 1px solid var(--border);
+  }
+  .bc-back:hover { color: var(--text); border-color: var(--muted); }
 
   .topbar-actions { display: flex; gap: 10px; align-items: center; }
 
@@ -83,10 +116,9 @@
     border-radius: 8px;
     font-family: 'DM Mono', monospace;
     font-size: 12px;
-    font-weight: 400;
     cursor: pointer;
     transition: all 0.15s;
-    display: flex; align-items: center; gap: 6px;
+    white-space: nowrap;
   }
   .add-btn:hover { background: #3a8a3a; transform: translateY(-1px); }
 
@@ -131,11 +163,7 @@
   .tag-item:hover { background: var(--surface2); color: var(--text); }
   .tag-item.active { background: var(--surface2); color: var(--text); }
 
-  .tag-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
+  .tag-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
   .tag-count {
     margin-left: auto;
@@ -146,15 +174,11 @@
     border-radius: 10px;
   }
   .tag-item.active .tag-count { background: var(--border); }
-
   .sidebar-divider { height: 1px; background: var(--border); margin: 8px 0; }
 
   /* CONTENT AREA */
-  .content {
-    flex: 1;
-    overflow: hidden;
-    position: relative;
-  }
+  .content { flex: 1; overflow: hidden; position: relative; }
+  .content-inner { display: flex; flex-direction: column; height: 100%; }
 
   /* GRID VIEW */
   .grid-view {
@@ -178,44 +202,15 @@
     overflow: hidden;
     animation: cardIn 0.3s ease backwards;
   }
-
   @keyframes cardIn {
     from { opacity: 0; transform: translateY(12px); }
     to { opacity: 1; transform: translateY(0); }
   }
-
-  .idea-card:nth-child(1) { animation-delay: 0.05s; }
-  .idea-card:nth-child(2) { animation-delay: 0.10s; }
-  .idea-card:nth-child(3) { animation-delay: 0.15s; }
-  .idea-card:nth-child(4) { animation-delay: 0.20s; }
-  .idea-card:nth-child(5) { animation-delay: 0.25s; }
-  .idea-card:nth-child(6) { animation-delay: 0.30s; }
-
-  .idea-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    border-radius: 12px 12px 0 0;
-  }
-
   .idea-card:hover {
     border-color: #c8c0b4;
     transform: translateY(-2px);
     box-shadow: 0 8px 32px rgba(0,0,0,0.08);
   }
-
-  .card-tag {
-    font-size: 9px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    padding: 3px 8px;
-    border-radius: 4px;
-    display: inline-block;
-    margin-bottom: 10px;
-    font-weight: 400;
-  }
-
   .card-title {
     font-family: 'Fraunces', serif;
     font-size: 16px;
@@ -224,22 +219,9 @@
     margin-bottom: 8px;
     color: var(--text);
   }
-
-  .card-body {
-    font-size: 11px;
-    color: var(--muted);
-    line-height: 1.6;
-    margin-bottom: 14px;
-  }
-
-  .card-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
+  .card-body { font-size: 11px; color: var(--muted); line-height: 1.6; margin-bottom: 14px; }
+  .card-footer { display: flex; align-items: center; justify-content: space-between; }
   .card-date { font-size: 10px; color: var(--muted); }
-
   .card-status {
     font-size: 9px;
     text-transform: uppercase;
@@ -265,6 +247,8 @@
   #map-canvas {
     position: absolute;
     top: 0; left: 0;
+    width: 100%; height: 100%;
+    will-change: transform, opacity;
   }
 
   .map-node {
@@ -273,40 +257,33 @@
     border: 1px solid var(--border);
     border-radius: 18px;
     padding: 14px 18px 12px;
-    cursor: pointer;
+    cursor: grab;
     transition: box-shadow 0.2s, transform 0.2s;
     min-width: 130px;
     max-width: 170px;
     z-index: 2;
     animation: nodeIn 0.4s ease backwards;
     box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    user-select: none;
   }
-
   @keyframes nodeIn {
     from { opacity: 0; transform: scale(0.8); }
     to { opacity: 1; transform: scale(1); }
   }
-
-  .map-node:hover {
-    box-shadow: 0 5px 18px rgba(0,0,0,0.13);
-    transform: scale(1.04);
-    z-index: 10;
-  }
-
+  .map-node:hover { box-shadow: 0 5px 18px rgba(0,0,0,0.13); z-index: 10; }
   .map-node.central {
     background: var(--accent);
     border-color: var(--accent);
     border-radius: 20px;
     padding: 16px 22px;
+    cursor: grab;
   }
-
   .node-label {
     font-size: 9px;
     text-transform: uppercase;
     letter-spacing: 1.5px;
     margin-bottom: 5px;
   }
-
   .node-title {
     font-family: 'Fraunces', serif;
     font-size: 13px;
@@ -314,166 +291,35 @@
     line-height: 1.3;
     color: var(--text);
   }
-
-  .map-node.central .node-title {
-    font-size: 16px;
-    color: #ffffff;
+  .map-node.central .node-title { font-size: 16px; color: #ffffff; }
+  .map-node.selected {
+    box-shadow: 0 0 0 2px var(--accent), 0 5px 18px rgba(0,0,0,0.13);
   }
 
-  /* MODAL / NEW IDEA */
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(26,24,20,0.4);
-    backdrop-filter: blur(4px);
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s;
+  /* BOARD NODES (top-level) */
+  .board-node {
+    min-width: 140px;
+    max-width: 180px;
+    padding: 14px 18px 13px;
   }
-  .modal-overlay.open { opacity: 1; pointer-events: all; }
-
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 28px;
-    width: 480px;
-    transform: translateY(20px);
-    transition: transform 0.2s;
-  }
-  .modal-overlay.open .modal { transform: translateY(0); }
-
-  .modal-title {
-    font-family: 'Fraunces', serif;
-    font-size: 22px;
-    font-weight: 500;
-    margin-bottom: 20px;
-    color: var(--text);
-  }
-
-  .field { margin-bottom: 16px; }
-  .field label {
-    display: block;
+  .board-node .node-title { font-size: 14px; }
+  .board-count {
     font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
     color: var(--muted);
-    margin-bottom: 6px;
+    margin-top: 5px;
+    letter-spacing: 0.3px;
   }
-
-  .field input, .field textarea {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 14px;
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    outline: none;
-    transition: border-color 0.15s;
-    resize: none;
-  }
-  .field input:focus, .field textarea:focus { border-color: var(--accent); }
-
-  .tag-select {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .tag-option {
-    padding: 5px 12px;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    font-size: 11px;
-    font-family: 'DM Mono', monospace;
-    cursor: pointer;
-    transition: all 0.15s;
+  .drill-hint {
+    font-size: 9px;
     color: var(--muted);
-    background: none;
-  }
-  .tag-option:hover { border-color: var(--muted); color: var(--text); }
-  .tag-option.selected { color: #0e0e10; border-color: transparent; }
-
-  .modal-actions { display: flex; gap: 10px; margin-top: 22px; justify-content: flex-end; }
-
-  .btn-cancel {
-    padding: 9px 20px;
-    border: 1px solid var(--border);
-    background: none;
-    color: var(--muted);
-    border-radius: 8px;
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .btn-cancel:hover { color: var(--text); border-color: var(--muted); }
-
-  .btn-save {
-    padding: 9px 20px;
-    background: var(--accent);
-    color: #0e0e10;
-    border: none;
-    border-radius: 8px;
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .btn-save:hover { background: #d4f570; }
-
-  /* SEARCH BAR */
-  .search-wrap {
-    padding: 14px 24px 0;
-    flex-shrink: 0;
-  }
-  .search-input {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 9px 14px 9px 36px;
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    outline: none;
-    transition: border-color 0.15s;
-    position: relative;
-  }
-  .search-wrap { position: relative; }
-  .search-icon {
-    position: absolute;
-    left: 38px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--muted);
-    font-size: 14px;
-    pointer-events: none;
-  }
-  .search-input:focus { border-color: var(--accent); }
-
-  /* CONTENT WRAPPER */
-  .content-inner {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+    margin-top: 7px;
+    opacity: 0.65;
+    letter-spacing: 0.3px;
+    border-top: 1px solid var(--border);
+    padding-top: 6px;
   }
 
-  /* MAP CANVAS (pans to reveal detail panels) */
-  #map-canvas {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  }
-
-  /* SVG LINES for map */
+  /* SVG LINES */
   .map-lines {
     position: absolute;
     top: 0; left: 0;
@@ -482,7 +328,7 @@
     z-index: 0;
   }
 
-  /* DETAIL PANEL (floating, shown on node click) */
+  /* DETAIL PANEL */
   .detail-panel {
     position: absolute;
     background: var(--surface);
@@ -494,89 +340,135 @@
     box-shadow: 0 4px 20px rgba(0,0,0,0.12);
     animation: nodeIn 0.2s ease backwards;
   }
-
   .detail-panel .detail-close {
     position: absolute;
     top: 10px; right: 12px;
-    background: none;
-    border: none;
-    color: var(--muted);
-    font-size: 18px;
-    cursor: pointer;
-    line-height: 1;
-    padding: 0;
+    background: none; border: none;
+    color: var(--muted); font-size: 18px;
+    cursor: pointer; line-height: 1; padding: 0;
   }
   .detail-panel .detail-close:hover { color: var(--text); }
-
   .detail-panel .detail-delete {
-    display: block;
-    width: 100%;
-    margin-top: 14px;
-    padding: 7px 0;
-    background: none;
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    color: var(--muted);
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: all 0.15s;
+    display: block; width: 100%;
+    margin-top: 14px; padding: 7px 0;
+    background: none; border: 1px solid var(--border);
+    border-radius: 7px; color: var(--muted);
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 1px;
+    cursor: pointer; transition: all 0.15s;
   }
   .detail-panel .detail-delete:hover { border-color: var(--accent2); color: var(--accent2); }
-
-  .map-node.selected {
-    box-shadow: 0 0 0 2px var(--accent), 0 5px 18px rgba(0,0,0,0.13);
-  }
-
   .detail-panel .detail-title {
-    font-family: 'Fraunces', serif;
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--text);
-    margin-bottom: 10px;
-    line-height: 1.35;
+    font-family: 'Fraunces', serif; font-size: 15px;
+    font-weight: 500; color: var(--text);
+    margin-bottom: 10px; line-height: 1.35;
     padding-right: 20px;
   }
-
   .detail-panel .detail-body {
-    font-size: 11px;
-    color: var(--muted);
-    line-height: 1.65;
-    margin-bottom: 14px;
+    font-size: 11px; color: var(--muted);
+    line-height: 1.65; margin-bottom: 14px;
   }
-
-  .detail-meta {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-
-  .detail-meta-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 10px;
-  }
-
+  .detail-meta { display: flex; flex-direction: column; gap: 5px; }
+  .detail-meta-row { display: flex; justify-content: space-between; font-size: 10px; }
   .detail-meta-row span:first-child { color: var(--muted); }
-  .detail-meta-row span:last-child  { color: var(--text); font-weight: 500; }
+  .detail-meta-row span:last-child { color: var(--text); font-weight: 500; }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(26,24,20,0.4);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 28px; width: 480px;
+    transform: translateY(20px); transition: transform 0.2s;
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal-title {
+    font-family: 'Fraunces', serif; font-size: 22px;
+    font-weight: 500; margin-bottom: 20px; color: var(--text);
+  }
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 1.5px;
+    color: var(--muted); margin-bottom: 6px;
+  }
+  .field input, .field textarea {
+    width: 100%; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 14px; color: var(--text);
+    font-family: 'DM Mono', monospace; font-size: 13px;
+    outline: none; transition: border-color 0.15s; resize: none;
+  }
+  .field input:focus, .field textarea:focus { border-color: var(--accent); }
+
+  /* COLOR SWATCHES */
+  .color-swatches { display: flex; gap: 10px; flex-wrap: wrap; }
+  .color-swatch {
+    width: 28px; height: 28px; border-radius: 50%;
+    cursor: pointer; border: 3px solid transparent;
+    transition: transform 0.15s, border-color 0.15s;
+  }
+  .color-swatch:hover { transform: scale(1.15); }
+  .color-swatch.selected { border-color: var(--text); transform: scale(1.1); }
+
+  .tag-select { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tag-option {
+    padding: 5px 12px; border-radius: 6px;
+    border: 1px solid var(--border); font-size: 11px;
+    font-family: 'DM Mono', monospace; cursor: pointer;
+    transition: all 0.15s; color: var(--muted); background: none;
+  }
+  .tag-option:hover { border-color: var(--muted); color: var(--text); }
+  .tag-option.selected { color: #0e0e10; border-color: transparent; }
+
+  .modal-actions { display: flex; gap: 10px; margin-top: 22px; justify-content: flex-end; }
+  .btn-cancel {
+    padding: 9px 20px; border: 1px solid var(--border);
+    background: none; color: var(--muted); border-radius: 8px;
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .btn-cancel:hover { color: var(--text); border-color: var(--muted); }
+  .btn-save {
+    padding: 9px 20px; background: var(--accent);
+    color: #ffffff; border: none; border-radius: 8px;
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .btn-save:hover { background: #3a8a3a; }
+
+  /* SEARCH BAR */
+  .search-wrap { padding: 14px 24px 0; flex-shrink: 0; position: relative; }
+  .search-input {
+    width: 100%; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 9px 14px 9px 36px; color: var(--text);
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    outline: none; transition: border-color 0.15s;
+  }
+  .search-icon {
+    position: absolute; left: 38px; top: 50%;
+    transform: translateY(-50%); color: var(--muted);
+    font-size: 14px; pointer-events: none;
+  }
+  .search-input:focus { border-color: var(--accent); }
 
   /* TOAST */
   .toast {
-    position: fixed;
-    bottom: 28px;
-    right: 28px;
-    background: var(--text);
-    color: #ffffff;
-    padding: 12px 20px;
-    border-radius: 10px;
-    font-size: 12px;
-    font-family: 'DM Mono', monospace;
-    transform: translateY(60px);
-    opacity: 0;
-    transition: all 0.3s;
-    z-index: 9999;
+    position: fixed; bottom: 28px; right: 28px;
+    background: var(--text); color: #ffffff;
+    padding: 12px 20px; border-radius: 10px;
+    font-size: 12px; font-family: 'DM Mono', monospace;
+    transform: translateY(60px); opacity: 0;
+    transition: all 0.3s; z-index: 9999;
   }
   .toast.show { transform: translateY(0); opacity: 1; }
 </style>
@@ -585,63 +477,49 @@
 
 <!-- TOP BAR -->
 <div class="topbar">
-  <div class="logo">idea<span>map</span></div>
+  <div class="topbar-left">
+    <div class="logo">idea<span>map</span></div>
+    <nav class="breadcrumb" id="breadcrumb">
+      <span class="bc-home" onclick="drillOut()">my ideas</span>
+      <span class="bc-sep" id="bc-sep" style="display:none">›</span>
+      <span class="bc-current" id="bc-board"></span>
+    </nav>
+  </div>
   <div class="topbar-actions">
     <div class="view-toggle">
       <button class="view-btn" id="btn-grid" onclick="setView('grid')">grid</button>
       <button class="view-btn active" id="btn-map" onclick="setView('map')">mindmap</button>
     </div>
-    <button class="add-btn" onclick="openModal()">+ new idea</button>
+    <button class="add-btn" id="add-btn" onclick="openModal()">+ new board</button>
   </div>
 </div>
 
 <!-- MAIN -->
 <div class="main">
 
-  <!-- SIDEBAR -->
-  <div class="sidebar">
-    <div class="sidebar-label">Categories</div>
+  <!-- SIDEBAR (status filters, shown only inside a board) -->
+  <div class="sidebar" id="sidebar" style="display:none">
+    <div class="sidebar-label">Status</div>
     <div class="tag-item active" onclick="filterTag('all', this)">
       <div class="tag-dot" style="background:#7c7a90"></div>
       all ideas
-      <span class="tag-count" id="count-all">6</span>
-    </div>
-    <div class="tag-item" onclick="filterTag('product', this)">
-      <div class="tag-dot" style="background:#2d6a2d"></div>
-      product
-      <span class="tag-count" id="count-product">2</span>
-    </div>
-    <div class="tag-item" onclick="filterTag('design', this)">
-      <div class="tag-dot" style="background:#c4365a"></div>
-      design
-      <span class="tag-count" id="count-design">1</span>
-    </div>
-    <div class="tag-item" onclick="filterTag('tech', this)">
-      <div class="tag-dot" style="background:#1e6a9a"></div>
-      tech
-      <span class="tag-count" id="count-tech">2</span>
-    </div>
-    <div class="tag-item" onclick="filterTag('business', this)">
-      <div class="tag-dot" style="background:#b06a10"></div>
-      business
-      <span class="tag-count" id="count-business">1</span>
+      <span class="tag-count" id="count-all">0</span>
     </div>
     <div class="sidebar-divider"></div>
-    <div class="sidebar-label">Status</div>
     <div class="tag-item" onclick="filterTag('raw', this)">
       <div class="tag-dot" style="background:#c8c0b4"></div>
       raw
-      <span class="tag-count">3</span>
+      <span class="tag-count" id="count-raw">0</span>
     </div>
     <div class="tag-item" onclick="filterTag('fleshed', this)">
       <div class="tag-dot" style="background:#9a9389"></div>
       fleshed out
-      <span class="tag-count">2</span>
+      <span class="tag-count" id="count-fleshed">0</span>
     </div>
     <div class="tag-item" onclick="filterTag('active', this)">
       <div class="tag-dot" style="background:#2d6a2d"></div>
       active
-      <span class="tag-count">1</span>
+      <span class="tag-count" id="count-active">0</span>
     </div>
   </div>
 
@@ -649,17 +527,17 @@
   <div class="content">
     <div class="content-inner">
 
-      <!-- SEARCH -->
-      <div class="search-wrap" id="search-wrap">
+      <!-- SEARCH (grid only) -->
+      <div class="search-wrap" id="search-wrap" style="display:none">
         <span class="search-icon">⌕</span>
         <input class="search-input" placeholder="search ideas..." id="search-input" oninput="searchIdeas(this.value)">
       </div>
 
       <!-- GRID VIEW -->
-      <div class="grid-view" id="grid-view"></div>
+      <div class="grid-view" id="grid-view" style="display:none"></div>
 
       <!-- MAP VIEW -->
-      <div class="map-view" id="map-view" style="display:none">
+      <div class="map-view" id="map-view">
         <div id="map-canvas">
           <svg class="map-lines" id="map-lines"></svg>
         </div>
@@ -672,27 +550,43 @@
 <!-- MODAL -->
 <div class="modal-overlay" id="modal" onclick="closeModalOutside(event)">
   <div class="modal">
-    <div class="modal-title">capture an idea</div>
-    <div class="field">
-      <label>Title</label>
-      <input type="text" id="idea-title" placeholder="what's the idea?">
-    </div>
-    <div class="field">
-      <label>Notes</label>
-      <textarea id="idea-body" rows="3" placeholder="flesh it out a bit..."></textarea>
-    </div>
-    <div class="field">
-      <label>Category</label>
-      <div class="tag-select" id="tag-select">
-        <button class="tag-option" data-tag="product" onclick="selectTag(this)">product</button>
-        <button class="tag-option" data-tag="design" onclick="selectTag(this)">design</button>
-        <button class="tag-option" data-tag="tech" onclick="selectTag(this)">tech</button>
-        <button class="tag-option" data-tag="business" onclick="selectTag(this)">business</button>
+    <div class="modal-title" id="modal-title-text">create a board</div>
+
+    <!-- Board creation fields -->
+    <div id="board-fields">
+      <div class="field">
+        <label>Board Name</label>
+        <input type="text" id="board-title" placeholder="e.g. Holidays, Work Projects...">
+      </div>
+      <div class="field">
+        <label>Colour</label>
+        <div class="color-swatches" id="color-swatches"></div>
       </div>
     </div>
+
+    <!-- Idea creation fields -->
+    <div id="idea-fields" style="display:none">
+      <div class="field">
+        <label>Title</label>
+        <input type="text" id="idea-title" placeholder="what's the idea?">
+      </div>
+      <div class="field">
+        <label>Notes</label>
+        <textarea id="idea-body" rows="3" placeholder="flesh it out a bit..."></textarea>
+      </div>
+      <div class="field">
+        <label>Status</label>
+        <div class="tag-select" id="status-select">
+          <button class="tag-option" data-status="raw" onclick="selectStatus(this)">raw</button>
+          <button class="tag-option" data-status="fleshed" onclick="selectStatus(this)">fleshed</button>
+          <button class="tag-option" data-status="active" onclick="selectStatus(this)">active</button>
+        </div>
+      </div>
+    </div>
+
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">cancel</button>
-      <button class="btn-save" onclick="saveIdea()">save idea</button>
+      <button class="btn-save" id="save-btn" onclick="saveModal()">save board</button>
     </div>
   </div>
 </div>
@@ -700,80 +594,59 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const TAG_COLORS = {
-  product: '#2d6a2d',
-  design: '#c4365a',
-  tech: '#1e6a9a',
-  business: '#b06a10',
-};
+// ── Constants & initial data ───────────────────────────────────────────────────
 
-let ideas = [
-  { id:1, title:'IdeaMap — the app itself', body:'A tool for capturing and visualising ideas with tags, mindmaps and smart resurfacing.', tag:'product', status:'active', date:'today' },
-  { id:2, title:'Fridge inventory tracker', body:'Scan receipts to auto-update what\'s in your fridge. Alert when things near expiry.', tag:'product', status:'fleshed', date:'2d ago' },
-  { id:3, title:'Ambient focus sounds', body:'Generative audio that adapts to your work rhythm — faster when you\'re in flow, slower when idle.', tag:'tech', status:'raw', date:'3d ago' },
-  { id:4, title:'Type-based card layouts', body:'Different card shapes for different idea types. Lists look different from concepts.', tag:'design', status:'fleshed', date:'5d ago' },
-  { id:5, title:'AI idea clustering', body:'Surface hidden connections between notes using embeddings. Group by semantic similarity not just tags.', tag:'tech', status:'raw', date:'1w ago' },
-  { id:6, title:'Idea licensing marketplace', body:'Sell or license your unused ideas to companies looking for innovation.', tag:'business', status:'raw', date:'1w ago' },
+const SWATCH_COLORS = [
+  '#2d6a2d', '#c4365a', '#1e6a9a', '#b06a10',
+  '#6a2d8a', '#8a2d2d', '#2d7a6a', '#6a5a2d',
 ];
 
-let currentView = 'map';
+let boards = [
+  { id: 'product',  title: 'Product',  color: '#2d6a2d' },
+  { id: 'design',   title: 'Design',   color: '#c4365a' },
+  { id: 'tech',     title: 'Tech',     color: '#1e6a9a' },
+  { id: 'business', title: 'Business', color: '#b06a10' },
+];
+
+let ideas = [
+  { id:1, title:'IdeaMap — the app itself',   body:'A tool for capturing and visualising ideas with tags, mindmaps and smart resurfacing.', tag:'product',  status:'active', date:'today' },
+  { id:2, title:'Fridge inventory tracker',   body:"Scan receipts to auto-update what's in your fridge. Alert when things near expiry.",   tag:'product',  status:'fleshed', date:'2d ago' },
+  { id:3, title:'Ambient focus sounds',        body:'Generative audio that adapts to your work rhythm — faster when in flow, slower when idle.', tag:'tech', status:'raw', date:'3d ago' },
+  { id:4, title:'Type-based card layouts',     body:'Different card shapes for different idea types. Lists look different from concepts.',       tag:'design', status:'fleshed', date:'5d ago' },
+  { id:5, title:'AI idea clustering',          body:'Surface hidden connections between notes using embeddings. Group by semantic similarity.',   tag:'tech', status:'raw', date:'1w ago' },
+  { id:6, title:'Idea licensing marketplace',  body:'Sell or license your unused ideas to companies looking for innovation.',                     tag:'business', status:'raw', date:'1w ago' },
+];
+
+// ── State ──────────────────────────────────────────────────────────────────────
+
+let currentView   = 'map';
 let currentFilter = 'all';
-let selectedTag = null;
-let nodePositions = {}; // persists dragged positions per idea id
+let currentBoardId = null;        // null = top level
+let nodePositionsByBoard = {};    // { top: {}, boardId: {} }
+let selStatus = 'raw';
+let selColor  = SWATCH_COLORS[0];
 let centralNode = null;
 let detailConnectorPath = null;
 
-function setView(v) {
-  currentView = v;
-  document.getElementById('btn-grid').classList.toggle('active', v === 'grid');
-  document.getElementById('btn-map').classList.toggle('active', v === 'map');
-  document.getElementById('grid-view').style.display = v === 'grid' ? 'grid' : 'none';
-  document.getElementById('map-view').style.display = v === 'map' ? 'block' : 'none';
-  document.getElementById('search-wrap').style.display = v === 'grid' ? 'block' : 'none';
-  if (v === 'map') renderMap();
+function currentPositions() {
+  const key = currentBoardId || 'top';
+  if (!nodePositionsByBoard[key]) nodePositionsByBoard[key] = {};
+  return nodePositionsByBoard[key];
 }
 
-function filterTag(tag, el) {
-  currentFilter = tag;
-  document.querySelectorAll('.tag-item').forEach(x => x.classList.remove('active'));
-  el.classList.add('active');
-  if (currentView === 'map') renderMap();
-  else renderGrid();
-}
+// ── Default layout helper ──────────────────────────────────────────────────────
 
-function searchIdeas(q) {
-  renderGrid(q.toLowerCase());
-}
-
-function renderGrid(query = '') {
-  const container = document.getElementById('grid-view');
-  let filtered = ideas;
-  if (currentFilter !== 'all') {
-    filtered = filtered.filter(i => i.tag === currentFilter || i.status === currentFilter);
+function getDefaultPositions(count, cx, cy, radius) {
+  const out = [];
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * 2 * Math.PI - Math.PI / 2;
+    const r = radius + (i % 3 === 1 ? 50 : i % 3 === 2 ? 25 : 0);
+    out.push({ x: cx + Math.cos(angle) * r - 80, y: cy + Math.sin(angle) * r - 40 });
   }
-  if (query) {
-    filtered = filtered.filter(i =>
-      i.title.toLowerCase().includes(query) || i.body.toLowerCase().includes(query)
-    );
-  }
-
-  container.innerHTML = filtered.map((idea, idx) => {
-    const col = TAG_COLORS[idea.tag] || '#7c7a90';
-    return `
-    <div class="idea-card" style="animation-delay:${idx*0.05}s" onclick="openCard(${idea.id})">
-      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${col};border-radius:12px 12px 0 0"></div>
-      <span class="card-tag" style="background:${col}20;color:${col}">${idea.tag}</span>
-      <div class="card-title">${idea.title}</div>
-      <div class="card-body">${idea.body}</div>
-      <div class="card-footer">
-        <span class="card-date">${idea.date}</span>
-        <span class="card-status">${idea.status}</span>
-      </div>
-    </div>`;
-  }).join('');
+  return out;
 }
 
-// ── Drag helpers ──────────────────────────────────────────────────────────────
+// ── Canvas helpers ─────────────────────────────────────────────────────────────
 
 function nodeCenter(el) {
   return [
@@ -785,41 +658,42 @@ function nodeCenter(el) {
 function refreshConnector(pathEl, fromEl, toEl) {
   const [x1, y1] = nodeCenter(fromEl);
   const [x2, y2] = nodeCenter(toEl);
-  const dx = x2 - x1;
-  const dy = y2 - y1;
-  const len = Math.sqrt(dx * dx + dy * dy) || 1;
-  // Bow the midpoint perpendicularly (left of direction of travel)
+  const dx = x2 - x1, dy = y2 - y1;
+  const len = Math.sqrt(dx*dx + dy*dy) || 1;
   const arc = Math.min(len * 0.18, 55);
-  const cx = (x1 + x2) / 2 + (-dy / len) * arc;
-  const cy = (y1 + y2) / 2 + ( dx / len) * arc;
+  const cx = (x1+x2)/2 + (-dy/len)*arc;
+  const cy = (y1+y2)/2 + ( dx/len)*arc;
   pathEl.setAttribute('d', `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`);
 }
 
-// connectedPaths: [{ pathEl, otherEl, isSource }]
-// isSource: true  → this el is the FROM end of the path
-// onClick fires only if the mouse barely moved (click not drag)
+function makePath(svg, col) {
+  const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  p.setAttribute('stroke', col || '#c8c0b4');
+  p.setAttribute('stroke-width', '1.5');
+  p.setAttribute('stroke-opacity', '0.45');
+  p.setAttribute('stroke-dasharray', '5 4');
+  p.setAttribute('fill', 'none');
+  svg.appendChild(p);
+  return p;
+}
+
 function makeDraggable(el, connectedPaths, onClick) {
   el.style.cursor = 'grab';
   el.addEventListener('mousedown', e => {
     if (e.button !== 0) return;
     e.stopPropagation();
     e.preventDefault();
-
-    const startMouseX = e.clientX;
-    const startMouseY = e.clientY;
-    const startLeft   = parseInt(el.style.left);
-    const startTop    = parseInt(el.style.top);
+    const sx = e.clientX, sy = e.clientY;
+    const sl = parseInt(el.style.left), st = parseInt(el.style.top);
     let dragged = false;
-
     el.style.cursor = 'grabbing';
-    el.style.zIndex  = 20;
+    el.style.zIndex = 20;
 
     function onMove(e) {
-      const dx = e.clientX - startMouseX;
-      const dy = e.clientY - startMouseY;
+      const dx = e.clientX - sx, dy = e.clientY - sy;
       if (!dragged && (Math.abs(dx) > 3 || Math.abs(dy) > 3)) dragged = true;
-      el.style.left = (startLeft + dx) + 'px';
-      el.style.top  = (startTop  + dy) + 'px';
+      el.style.left = (sl + dx) + 'px';
+      el.style.top  = (st + dy) + 'px';
       connectedPaths.forEach(({ pathEl, otherEl, isSource }) => {
         isSource ? refreshConnector(pathEl, el, otherEl)
                  : refreshConnector(pathEl, otherEl, el);
@@ -828,115 +702,297 @@ function makeDraggable(el, connectedPaths, onClick) {
 
     function onUp() {
       el.style.cursor = 'grab';
-      el.style.zIndex  = 2;
+      el.style.zIndex = 2;
       document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup',   onUp);
-      if (el.dataset.ideaId) {
-        nodePositions[el.dataset.ideaId] = { x: parseInt(el.style.left), y: parseInt(el.style.top) };
-      }
+      document.removeEventListener('mouseup', onUp);
+      const posKey = el.dataset.ideaId || el.dataset.boardId;
+      if (posKey) currentPositions()[posKey] = { x: parseInt(el.style.left), y: parseInt(el.style.top) };
       if (!dragged && onClick) onClick();
     }
 
     document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup',   onUp);
+    document.addEventListener('mouseup', onUp);
   });
 }
 
-function makePath(svg, col, neutral = false) {
-  const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  p.setAttribute('stroke', neutral ? '#c8c0b4' : col);
-  p.setAttribute('stroke-width', '1.5');
-  p.setAttribute('stroke-opacity', neutral ? '0.5' : '0.4');
-  p.setAttribute('stroke-dasharray', '5 4');
-  p.setAttribute('fill', 'none');
-  svg.appendChild(p);
-  return p;
-}
+// ── Node factory ───────────────────────────────────────────────────────────────
 
-// ── Map render ────────────────────────────────────────────────────────────────
-
-function renderMap() {
-  const container = document.getElementById('map-view');
-  const canvas = document.getElementById('map-canvas');
-  canvas.style.transition = 'none';
-  canvas.style.transform = '';
-  canvas.querySelectorAll('.map-node, .detail-panel').forEach(n => n.remove());
-  if (detailConnectorPath) { detailConnectorPath.remove(); detailConnectorPath = null; }
-  const svg = document.getElementById('map-lines');
-  svg.innerHTML = '';
-
-  const W = container.offsetWidth;
-  const H = container.offsetHeight;
-  const cx = W / 2 - 90;
-  const cy = H / 2 - 50;
-
-  centralNode = makeNode(true, 'my ideas', '', cx, cy, 'central');
-  const central = centralNode;
-  canvas.appendChild(central);
-
-  const defaultPositions = [
-    { x: cx - 260, y: cy - 120 },
-    { x: cx + 100, y: cy - 150 },
-    { x: cx - 280, y: cy + 80 },
-    { x: cx + 110, y: cy + 70 },
-    { x: cx - 80,  y: cy + 180 },
-    { x: cx + 260, y: cy - 20  },
-  ];
-
-  const visibleIdeas = currentFilter === 'all'
-    ? ideas
-    : ideas.filter(i => i.tag === currentFilter || i.status === currentFilter);
-
-  const centralPaths = [];
-
-  visibleIdeas.forEach((idea, i) => {
-    const pos = nodePositions[idea.id] || defaultPositions[i];
-    if (!pos) return;
-    if (!nodePositions[idea.id]) nodePositions[idea.id] = pos; // lock in default position
-    const col  = TAG_COLORS[idea.tag] || '#7c7a90';
-    const node = makeNode(false, idea.title, idea.tag, pos.x, pos.y, '', col, i);
-    node.dataset.ideaId = idea.id;
-    canvas.appendChild(node);
-
-    const pathEl = makePath(svg, col);
-    refreshConnector(pathEl, central, node);
-
-    centralPaths.push({ pathEl, otherEl: node, isSource: true });
-    makeDraggable(node, [{ pathEl, otherEl: central, isSource: false }], () => showDetail(idea.id, node));
-  });
-
-  makeDraggable(central, centralPaths, null);
-}
-
-// ── Node factory ──────────────────────────────────────────────────────────────
-
-function makeNode(central, title, tag, x, y, extraClass = '', col = '', idx = 0, hint = '') {
+function makeNode(isCentral, title, label, x, y, col, idx) {
   const el = document.createElement('div');
-  el.className = 'map-node' + (central ? ' central' : '') + (extraClass ? ' ' + extraClass : '');
+  el.className = 'map-node' + (isCentral ? ' central' : '');
   el.style.left = x + 'px';
   el.style.top  = y + 'px';
-  el.style.animationDelay = (idx * 0.06 + 0.1) + 's';
-  if (!central && col) el.style.borderTop = `2px solid ${col}`;
+  el.style.animationDelay = ((idx || 0) * 0.06 + 0.1) + 's';
+  if (!isCentral && col) el.style.borderTop = `2px solid ${col}`;
   el.innerHTML = `
-    ${tag  ? `<div class="node-label" style="color:${col}">${tag}</div>` : ''}
+    ${label ? `<div class="node-label" style="color:${col || 'var(--muted)'}">${label}</div>` : ''}
     <div class="node-title">${title}</div>
-    ${hint ? `<div class="back-hint">${hint}</div>` : ''}
   `;
   return el;
 }
 
-// ── Detail panel (shown in-place on node click) ───────────────────────────────
+function makeBoardNode(board, pos, ideaCount, idx) {
+  const el = document.createElement('div');
+  el.className = 'map-node board-node';
+  el.style.left = pos.x + 'px';
+  el.style.top  = pos.y + 'px';
+  el.style.borderTop = `3px solid ${board.color}`;
+  el.style.animationDelay = (idx * 0.07 + 0.1) + 's';
+  el.dataset.boardId = board.id;
+  el.innerHTML = `
+    <div class="node-title">${board.title}</div>
+    <div class="board-count">${ideaCount} idea${ideaCount !== 1 ? 's' : ''}</div>
+    <div class="drill-hint">double-click to open ↗</div>
+  `;
+  return el;
+}
+
+// ── Render ─────────────────────────────────────────────────────────────────────
+
+function renderMap() {
+  if (currentBoardId === null) renderTopLevel();
+  else renderBoardLevel();
+}
+
+function _prepCanvas(animate) {
+  const canvas = document.getElementById('map-canvas');
+  const svg    = document.getElementById('map-lines');
+  canvas.style.transition = 'none';
+  canvas.style.transform  = '';
+  canvas.style.opacity    = '';
+  svg.style.transition    = '';
+  svg.style.opacity       = '';
+  canvas.querySelectorAll('.map-node, .detail-panel').forEach(n => n.remove());
+  if (detailConnectorPath) { detailConnectorPath.remove(); detailConnectorPath = null; }
+  svg.innerHTML = '';
+  if (animate) {
+    canvas.style.opacity = '0';
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      canvas.style.transition = 'opacity 0.32s ease';
+      canvas.style.opacity    = '1';
+    }));
+  }
+  return { canvas, svg };
+}
+
+function renderTopLevel(animate) {
+  const { canvas, svg } = _prepCanvas(animate);
+  const container = document.getElementById('map-view');
+  const W = container.offsetWidth, H = container.offsetHeight;
+  const cx = W / 2 - 90, cy = H / 2 - 50;
+
+  centralNode = makeNode(true, 'my ideas', '', cx, cy, '', 0);
+  canvas.appendChild(centralNode);
+
+  const positions = currentPositions();
+  const defaults  = getDefaultPositions(boards.length, cx, cy, 240);
+  const centralPaths = [];
+
+  boards.forEach((board, i) => {
+    const ideaCount = ideas.filter(idea => idea.tag === board.id).length;
+    const pos = positions[board.id] || defaults[i];
+    if (!positions[board.id]) positions[board.id] = pos;
+
+    const node = makeBoardNode(board, pos, ideaCount, i);
+    canvas.appendChild(node);
+
+    const pathEl = makePath(svg, board.color);
+    refreshConnector(pathEl, centralNode, node);
+    centralPaths.push({ pathEl, otherEl: node, isSource: true });
+
+    node.addEventListener('dblclick', e => { e.stopPropagation(); drillInto(board.id, node); });
+    makeDraggable(node, [{ pathEl, otherEl: centralNode, isSource: false }], null);
+  });
+
+  makeDraggable(centralNode, centralPaths, null);
+}
+
+function renderBoardLevel(animate) {
+  const board = boards.find(b => b.id === currentBoardId);
+  if (!board) return;
+
+  const { canvas, svg } = _prepCanvas(animate);
+  const container = document.getElementById('map-view');
+  const W = container.offsetWidth, H = container.offsetHeight;
+  const cx = W / 2 - 90, cy = H / 2 - 50;
+
+  centralNode = makeNode(true, board.title, '', cx, cy, board.color, 0);
+  centralNode.style.background   = board.color;
+  centralNode.style.borderColor  = board.color;
+  canvas.appendChild(centralNode);
+
+  const positions = currentPositions();
+  let visible = ideas.filter(i => i.tag === currentBoardId);
+  if (currentFilter !== 'all') visible = visible.filter(i => i.status === currentFilter);
+
+  const defaults = getDefaultPositions(visible.length, cx, cy, 230);
+  const centralPaths = [];
+
+  visible.forEach((idea, i) => {
+    const pos = positions[idea.id] || defaults[i];
+    if (!pos) return;
+    if (!positions[idea.id]) positions[idea.id] = pos;
+
+    const node = makeNode(false, idea.title, idea.status, pos.x, pos.y, board.color, i);
+    node.dataset.ideaId = idea.id;
+    canvas.appendChild(node);
+
+    const pathEl = makePath(svg, board.color);
+    refreshConnector(pathEl, centralNode, node);
+    centralPaths.push({ pathEl, otherEl: node, isSource: true });
+
+    makeDraggable(node, [{ pathEl, otherEl: centralNode, isSource: false }], () => showDetail(idea.id, node));
+  });
+
+  makeDraggable(centralNode, centralPaths, null);
+}
+
+// ── Drill in / out ─────────────────────────────────────────────────────────────
+
+function drillInto(boardId, nodeEl) {
+  const canvas = document.getElementById('map-canvas');
+  const svg    = document.getElementById('map-lines');
+
+  canvas.querySelectorAll('.map-node').forEach(n => {
+    n.style.transition = 'transform 0.32s ease, opacity 0.28s ease';
+    if (n === nodeEl) {
+      n.style.transform = 'scale(2.2)';
+      n.style.opacity   = '0';
+    } else {
+      n.style.transform = 'scale(0.85)';
+      n.style.opacity   = '0';
+    }
+  });
+  svg.style.transition = 'opacity 0.2s ease';
+  svg.style.opacity    = '0';
+
+  setTimeout(() => {
+    currentBoardId  = boardId;
+    currentFilter   = 'all';
+    updateUI();
+    renderBoardLevel(true);
+  }, 340);
+}
+
+function drillOut() {
+  if (currentBoardId === null) return;
+  closeDetail();
+  const canvas = document.getElementById('map-canvas');
+  canvas.style.transition = 'opacity 0.25s ease';
+  canvas.style.opacity    = '0';
+
+  setTimeout(() => {
+    currentBoardId  = null;
+    currentFilter   = 'all';
+    updateUI();
+    renderTopLevel(true);
+  }, 260);
+}
+
+// ── UI state ───────────────────────────────────────────────────────────────────
+
+function updateUI() {
+  const bcSep   = document.getElementById('bc-sep');
+  const bcBoard = document.getElementById('bc-board');
+  const sidebar = document.getElementById('sidebar');
+  const addBtn  = document.getElementById('add-btn');
+
+  if (currentBoardId) {
+    const board = boards.find(b => b.id === currentBoardId);
+    bcSep.style.display   = 'inline';
+    bcBoard.textContent   = board ? board.title : currentBoardId;
+    sidebar.style.display = 'flex';
+    addBtn.textContent    = '+ new idea';
+  } else {
+    bcSep.style.display   = 'none';
+    bcBoard.textContent   = '';
+    sidebar.style.display = 'none';
+    addBtn.textContent    = '+ new board';
+  }
+
+  // Reset sidebar active state
+  document.querySelectorAll('.tag-item').forEach(x => x.classList.remove('active'));
+  const allItem = document.querySelector('.tag-item');
+  if (allItem) allItem.classList.add('active');
+
+  updateCounts();
+}
+
+function updateCounts() {
+  if (currentBoardId) {
+    const boardIdeas = ideas.filter(i => i.tag === currentBoardId);
+    const all = document.getElementById('count-all');
+    if (all) all.textContent = boardIdeas.length;
+    ['raw', 'fleshed', 'active'].forEach(s => {
+      const el = document.getElementById('count-' + s);
+      if (el) el.textContent = boardIdeas.filter(i => i.status === s).length;
+    });
+  }
+}
+
+// ── View ───────────────────────────────────────────────────────────────────────
+
+function setView(v) {
+  currentView = v;
+  document.getElementById('btn-grid').classList.toggle('active', v === 'grid');
+  document.getElementById('btn-map').classList.toggle('active', v === 'map');
+  document.getElementById('grid-view').style.display   = v === 'grid' ? 'grid' : 'none';
+  document.getElementById('map-view').style.display    = v === 'map'  ? 'block' : 'none';
+  document.getElementById('search-wrap').style.display = v === 'grid' ? 'block' : 'none';
+  if (v === 'map') renderMap();
+  else renderGrid();
+}
+
+function filterTag(tag, el) {
+  currentFilter = tag;
+  document.querySelectorAll('.tag-item').forEach(x => x.classList.remove('active'));
+  el.classList.add('active');
+  if (currentView === 'map') renderMap();
+  else renderGrid();
+}
+
+function searchIdeas(q) { renderGrid(q.toLowerCase()); }
+
+// ── Grid view ──────────────────────────────────────────────────────────────────
+
+function renderGrid(query = '') {
+  const container = document.getElementById('grid-view');
+  let filtered = ideas;
+
+  if (currentBoardId) filtered = filtered.filter(i => i.tag === currentBoardId);
+  if (currentFilter !== 'all') filtered = filtered.filter(i => i.status === currentFilter);
+  if (query) filtered = filtered.filter(i =>
+    i.title.toLowerCase().includes(query) || i.body.toLowerCase().includes(query)
+  );
+
+  container.innerHTML = filtered.map((idea, idx) => {
+    const board = boards.find(b => b.id === idea.tag);
+    const col = board ? board.color : '#7c7a90';
+    return `
+    <div class="idea-card" style="animation-delay:${idx*0.05}s" onclick="openCard(${idea.id})">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${col};border-radius:12px 12px 0 0"></div>
+      <div class="card-title">${idea.title}</div>
+      <div class="card-body">${idea.body}</div>
+      <div class="card-footer">
+        <span class="card-date">${idea.date}</span>
+        <span class="card-status">${idea.status}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openCard(id) { /* placeholder */ }
+
+// ── Detail panel ───────────────────────────────────────────────────────────────
 
 function showDetail(id, nodeEl) {
   const idea = ideas.find(i => i.id === id);
   if (!idea) return;
-  const col = TAG_COLORS[idea.tag] || '#7c7a90';
-  const container = document.getElementById('map-view');
-  const svg = document.getElementById('map-lines');
-
+  const board = boards.find(b => b.id === idea.tag);
+  const col = board ? board.color : '#7c7a90';
   const canvas = document.getElementById('map-canvas');
+  const svg    = document.getElementById('map-lines');
 
-  // Toggle off if already open for this idea
   const existing = canvas.querySelector('.detail-panel');
   if (existing) {
     existing.remove();
@@ -945,23 +1001,17 @@ function showDetail(id, nodeEl) {
     if (existing.dataset.ideaId === String(id)) return;
   }
 
-  // Highlight selected node
   document.querySelectorAll('.map-node.selected').forEach(n => n.classList.remove('selected'));
   nodeEl.classList.add('selected');
 
-  // Direction vector from central node to clicked node
   const [ncx, ncy] = nodeCenter(nodeEl);
   const [ccx, ccy] = nodeCenter(centralNode);
-  const dx = ncx - ccx;
-  const dy = ncy - ccy;
-  const len = Math.sqrt(dx * dx + dy * dy) || 1;
-  const dirX = dx / len;
-  const dirY = dy / len;
-
-  // Place detail panel further out along the same direction
+  const dx = ncx - ccx, dy = ncy - ccy;
+  const len = Math.sqrt(dx*dx + dy*dy) || 1;
+  const dirX = dx/len, dirY = dy/len;
   const DIST = 210;
-  const px = ncx + dirX * DIST - 110; // 110 = half of 220px panel width
-  const py = ncy + dirY * DIST - 50;  // 50 = approx half panel height
+  const px = ncx + dirX * DIST - 110;
+  const py = ncy + dirY * DIST - 50;
 
   const panel = document.createElement('div');
   panel.className = 'detail-panel';
@@ -973,7 +1023,6 @@ function showDetail(id, nodeEl) {
     <div class="detail-title">${idea.title}</div>
     <div class="detail-body">${idea.body}</div>
     <div class="detail-meta">
-      <div class="detail-meta-row"><span>category</span><span style="color:${col}">${idea.tag}</span></div>
       <div class="detail-meta-row"><span>status</span><span>${idea.status}</span></div>
       <div class="detail-meta-row"><span>added</span><span>${idea.date}</span></div>
     </div>
@@ -981,18 +1030,15 @@ function showDetail(id, nodeEl) {
   `;
   canvas.appendChild(panel);
 
-  // Draw connector from clicked node to detail panel
   detailConnectorPath = makePath(svg, col);
   refreshConnector(detailConnectorPath, nodeEl, panel);
 
-  // Pan canvas so the detail panel is fully visible
   requestAnimationFrame(() => {
+    const container = document.getElementById('map-view');
     const MARGIN = 16;
-    const cW = container.offsetWidth;
-    const cH = container.offsetHeight;
+    const cW = container.offsetWidth, cH = container.offsetHeight;
     const matrix = new DOMMatrix(getComputedStyle(canvas).transform);
-    const curX = matrix.m41;
-    const curY = matrix.m42;
+    const curX = matrix.m41, curY = matrix.m42;
     const pL = parseFloat(panel.style.left) + curX;
     const pT = parseFloat(panel.style.top)  + curY;
     const pR = pL + panel.offsetWidth;
@@ -1018,7 +1064,7 @@ function closeDetail() {
 
 function deleteIdea(id) {
   ideas = ideas.filter(i => i.id !== id);
-  delete nodePositions[id];
+  delete currentPositions()[id];
   closeDetail();
   updateCounts();
   if (currentView === 'map') renderMap();
@@ -1026,39 +1072,78 @@ function deleteIdea(id) {
   showToast('idea deleted');
 }
 
-let selTag = null;
-function selectTag(btn) {
-  document.querySelectorAll('.tag-option').forEach(b => {
+// ── Modal ──────────────────────────────────────────────────────────────────────
+
+function renderColorSwatches() {
+  const wrap = document.getElementById('color-swatches');
+  wrap.innerHTML = SWATCH_COLORS.map(c => `
+    <div class="color-swatch${c === selColor ? ' selected' : ''}"
+         style="background:${c}"
+         data-color="${c}"
+         onclick="selectColor(this)"></div>
+  `).join('');
+}
+
+function selectColor(el) {
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+  selColor = el.dataset.color;
+}
+
+function selectStatus(btn) {
+  document.querySelectorAll('#status-select .tag-option').forEach(b => {
     b.classList.remove('selected');
     b.style.background = '';
     b.style.color = '';
   });
   btn.classList.add('selected');
-  const col = TAG_COLORS[btn.dataset.tag];
-  btn.style.background = col;
+  btn.style.background = '#2d6a2d';
   btn.style.color = '#ffffff';
-  selTag = btn.dataset.tag;
+  selStatus = btn.dataset.status;
 }
 
 function openModal() {
+  const isTopLevel = currentBoardId === null;
+  document.getElementById('board-fields').style.display = isTopLevel ? 'block' : 'none';
+  document.getElementById('idea-fields').style.display  = isTopLevel ? 'none'  : 'block';
+  document.getElementById('modal-title-text').textContent = isTopLevel ? 'create a board' : 'capture an idea';
+  document.getElementById('save-btn').textContent = isTopLevel ? 'save board' : 'save idea';
+  renderColorSwatches();
   document.getElementById('modal').classList.add('open');
-  setTimeout(() => document.getElementById('idea-title').focus(), 200);
+  setTimeout(() => {
+    const f = isTopLevel ? document.getElementById('board-title') : document.getElementById('idea-title');
+    if (f) f.focus();
+  }, 200);
 }
 
 function closeModal() {
   document.getElementById('modal').classList.remove('open');
-  document.getElementById('idea-title').value = '';
-  document.getElementById('idea-body').value = '';
-  document.querySelectorAll('.tag-option').forEach(b => {
-    b.classList.remove('selected');
-    b.style.background = '';
-    b.style.color = '';
+  document.getElementById('board-title').value = '';
+  document.getElementById('idea-title').value  = '';
+  document.getElementById('idea-body').value   = '';
+  document.querySelectorAll('#status-select .tag-option').forEach(b => {
+    b.classList.remove('selected'); b.style.background = ''; b.style.color = '';
   });
-  selTag = null;
+  selStatus = 'raw';
 }
 
-function closeModalOutside(e) {
-  if (e.target.id === 'modal') closeModal();
+function closeModalOutside(e) { if (e.target.id === 'modal') closeModal(); }
+
+function saveModal() {
+  if (currentBoardId === null) saveBoard();
+  else saveIdea();
+}
+
+function saveBoard() {
+  const title = document.getElementById('board-title').value.trim();
+  if (!title) { showToast('⚠ add a name first'); return; }
+  const id = title.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
+  boards.push({ id, title, color: selColor });
+  delete nodePositionsByBoard['top']; // force recalc layout
+  closeModal();
+  updateUI();
+  if (currentView === 'map') renderMap();
+  showToast('✦ board created');
 }
 
 function saveIdea() {
@@ -1068,24 +1153,54 @@ function saveIdea() {
     id: Date.now(),
     title,
     body: document.getElementById('idea-body').value.trim() || 'No notes yet.',
-    tag: selTag || 'product',
-    status: 'raw',
-    date: 'just now'
+    tag: currentBoardId,
+    status: selStatus || 'raw',
+    date: 'just now',
   });
   updateCounts();
-  renderGrid();
   if (currentView === 'map') renderMap();
+  else renderGrid();
   closeModal();
   showToast('✦ idea saved');
 }
 
-function updateCounts() {
-  document.getElementById('count-all').textContent = ideas.length;
-  ['product','design','tech','business'].forEach(t => {
-    const el = document.getElementById('count-' + t);
-    if (el) el.textContent = ideas.filter(i => i.tag === t).length;
+// ── Canvas pan ─────────────────────────────────────────────────────────────────
+
+(function() {
+  const mapView = document.getElementById('map-view');
+  const canvas  = document.getElementById('map-canvas');
+  let panStart = null, panOrigin = null;
+
+  mapView.addEventListener('mousedown', e => {
+    const t = e.target;
+    if (t === mapView || t === canvas || t.classList.contains('map-lines') || t.tagName === 'svg') {
+      panStart  = { x: e.clientX, y: e.clientY };
+      const m   = new DOMMatrix(getComputedStyle(canvas).transform);
+      panOrigin = { x: m.m41, y: m.m42 };
+    }
   });
-}
+
+  document.addEventListener('mousemove', e => {
+    if (!panStart) return;
+    const dx = e.clientX - panStart.x, dy = e.clientY - panStart.y;
+    canvas.style.transition = 'none';
+    canvas.style.transform  = `translate(${panOrigin.x + dx}px, ${panOrigin.y + dy}px)`;
+  });
+
+  document.addEventListener('mouseup', () => { panStart = null; panOrigin = null; });
+})();
+
+// ── Keyboard ───────────────────────────────────────────────────────────────────
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (document.getElementById('modal').classList.contains('open')) closeModal();
+    else if (document.querySelector('.detail-panel')) closeDetail();
+    else if (currentBoardId !== null) drillOut();
+  }
+});
+
+// ── Toast ──────────────────────────────────────────────────────────────────────
 
 function showToast(msg) {
   const t = document.getElementById('toast');
@@ -1094,8 +1209,9 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2200);
 }
 
-// init
-renderGrid();
+// ── Init ───────────────────────────────────────────────────────────────────────
+
+updateUI();
 setView('map');
 </script>
 </body>
