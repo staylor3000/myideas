@@ -203,6 +203,15 @@
 
   .toast { position: fixed; bottom: 28px; right: 28px; background: var(--text); color: #ffffff; padding: 12px 20px; border-radius: 10px; font-size: 12px; font-family: 'DM Mono', monospace; transform: translateY(60px); opacity: 0; transition: all 0.3s; z-index: 9999; }
   .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* CONNECT MODE */
+  .connect-btn { background: none; border: 1px solid var(--border); color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px; padding: 5px 12px; border-radius: 6px; cursor: pointer; transition: all 0.15s; letter-spacing: 0.3px; }
+  .connect-btn:hover { border-color: var(--muted); color: var(--text); }
+  .connect-btn.active { background: #e8804a1a; border-color: #e8804a; color: #e8804a; }
+  .map-view.connect-mode { cursor: crosshair !important; }
+  .map-view.connect-mode .map-node { cursor: crosshair !important; }
+  .map-node.connect-source { box-shadow: 0 0 0 2px #e8804a, 0 4px 18px #e8804a33; animation: none; }
+  .conn-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 9px; color: #e8804a; background: #e8804a15; border: 1px solid #e8804a30; border-radius: 4px; padding: 2px 5px; margin-top: 5px; }
 </style>
 </head>
 <body>
@@ -220,6 +229,7 @@
       <button class="view-btn active" id="btn-map" onclick="setView('map')">mindmap</button>
     </div>
     -->
+    <button class="connect-btn" id="connect-btn" onclick="toggleConnectMode()" title="Connect two nodes across boards">⤳ connect</button>
     <button class="add-btn" id="add-btn" onclick="openModal()">+ new board</button>
   </div>
 </div>
@@ -374,6 +384,11 @@ let nodePositionsByBoard = {};
 let centralNode         = null;
 let detailConnectorPath = null;
 
+let connections    = []; // {id, sourceId, targetId} — board IDs or idea IDs
+let connectMode    = false;
+let connectSrcId   = null;
+let connectSrcEl   = null;
+
 // ── Core helpers ───────────────────────────────────────────────────────────────
 
 function activeBoardId() {
@@ -437,26 +452,101 @@ function navigateToBoard(boardId) {
 }
 
 function drillInto(boardId, nodeEl) {
-  const canvas = document.getElementById('map-canvas');
-  const svg    = document.getElementById('map-lines');
+  const canvas    = document.getElementById('map-canvas');
+  const svg       = document.getElementById('map-lines');
+  const container = document.getElementById('map-view');
+
+  // Slide canvas so the double-clicked node glides to the viewport centre
+  const W = container.offsetWidth, H = container.offsetHeight;
+  const targetX = W / 2 - 90, targetY = H / 2 - 50; // matches cx/cy in renderLevel
+  const nodeX   = parseInt(nodeEl.style.left);
+  const nodeY   = parseInt(nodeEl.style.top);
+  const newCanvasX = targetX - nodeX;
+  const newCanvasY = targetY - nodeY;
+
+  // Fade siblings out, keep clicked node prominent
   canvas.querySelectorAll('.map-node').forEach(n => {
-    n.style.transition = 'transform 0.32s ease, opacity 0.28s ease';
-    if (n === nodeEl) { n.style.transform = 'scale(2.2)'; n.style.opacity = '0'; }
-    else              { n.style.transform = 'scale(0.85)'; n.style.opacity = '0'; }
+    n.style.transition = 'opacity 0.28s ease, transform 0.32s ease';
+    if (n !== nodeEl) { n.style.opacity = '0'; n.style.transform = 'scale(0.88)'; }
+    else { n.style.transform = 'scale(1.1)'; }
   });
-  svg.style.transition = 'opacity 0.2s ease';
-  svg.style.opacity    = '0';
+  svg.style.transition = 'opacity 0.18s ease'; svg.style.opacity = '0';
+
+  // Slide canvas to bring this node to centre
+  canvas.style.transition = 'transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+  canvas.style.transform  = `translate(${newCanvasX}px, ${newCanvasY}px)`;
+
   setTimeout(() => {
     navigationStack.push(boardId);
     currentFilter = 'all';
     updateUI();
     renderLevel(true);
-  }, 340);
+  }, 400);
 }
 
 function drillOut() {
   if (navigationStack.length === 0) return;
   navigateToLevel(navigationStack.slice(0, -1));
+}
+
+// ── Connections ────────────────────────────────────────────────────────────────
+
+function toggleConnectMode() {
+  connectMode = !connectMode;
+  // cancel any pending source selection
+  if (connectSrcEl) { connectSrcEl.classList.remove('connect-source'); connectSrcEl = null; }
+  connectSrcId = null;
+  document.getElementById('connect-btn').classList.toggle('active', connectMode);
+  document.getElementById('map-view').classList.toggle('connect-mode', connectMode);
+  if (connectMode) showToast('connect mode — click a node to start');
+}
+
+function handleConnectClick(el, nodeId) {
+  if (!connectSrcId) {
+    connectSrcId = nodeId;
+    connectSrcEl = el;
+    el.classList.add('connect-source');
+    showToast('now click the target node');
+    return;
+  }
+  if (connectSrcId === nodeId) {
+    connectSrcEl.classList.remove('connect-source');
+    connectSrcId = null; connectSrcEl = null;
+    return;
+  }
+  const already = connections.some(c =>
+    (c.sourceId === connectSrcId && c.targetId === nodeId) ||
+    (c.sourceId === nodeId       && c.targetId === connectSrcId)
+  );
+  if (!already) {
+    connections.push({ id: Date.now(), sourceId: connectSrcId, targetId: nodeId });
+    renderConnections();
+    showToast('✦ connection made');
+  } else {
+    showToast('already connected');
+  }
+  connectSrcEl.classList.remove('connect-source');
+  connectSrcId = null; connectSrcEl = null;
+}
+
+function renderConnections() {
+  const canvas = document.getElementById('map-canvas');
+  const svg    = document.getElementById('map-lines');
+  svg.querySelectorAll('.cross-conn').forEach(p => p.remove());
+  connections.forEach(conn => {
+    const fromEl = canvas.querySelector(`[data-board-id="${conn.sourceId}"], [data-idea-id="${conn.sourceId}"]`);
+    const toEl   = canvas.querySelector(`[data-board-id="${conn.targetId}"], [data-idea-id="${conn.targetId}"]`);
+    if (!fromEl || !toEl) return;
+    const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    p.setAttribute('stroke', '#e8804a');
+    p.setAttribute('stroke-width', '2');
+    p.setAttribute('stroke-opacity', '0.75');
+    p.setAttribute('fill', 'none');
+    p.classList.add('cross-conn');
+    p.dataset.connId = String(conn.id);
+    svg.appendChild(p);
+    refreshConnector(p, fromEl, toEl);
+  });
 }
 
 // ── UI state ───────────────────────────────────────────────────────────────────
@@ -668,7 +758,7 @@ function makePath(svg, col) {
   return p;
 }
 
-function makeDraggable(el, connectedPaths, onClick) {
+function makeDraggable(el, connectedPaths, onClick, nodeId) {
   el.style.cursor = 'grab';
   el.addEventListener('mousedown', e => {
     if (e.button !== 0) return;
@@ -685,6 +775,8 @@ function makeDraggable(el, connectedPaths, onClick) {
       connectedPaths.forEach(({ pathEl, otherEl, isSource }) =>
         isSource ? refreshConnector(pathEl, el, otherEl) : refreshConnector(pathEl, otherEl, el)
       );
+      // keep cross-connections live while dragging
+      svg_liveConnUpdate(el);
     }
     function onUp() {
       el.style.cursor = 'grab'; el.style.zIndex = 2;
@@ -692,10 +784,28 @@ function makeDraggable(el, connectedPaths, onClick) {
       document.removeEventListener('mouseup', onUp);
       const posKey = el.dataset.ideaId || el.dataset.boardId;
       if (posKey) currentPositions()[posKey] = { x: parseInt(el.style.left), y: parseInt(el.style.top) };
-      if (!dragged && onClick) onClick();
+      if (!dragged) {
+        if (connectMode && nodeId) handleConnectClick(el, nodeId);
+        else if (onClick) onClick();
+      }
     }
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
+  });
+}
+
+function svg_liveConnUpdate(movedEl) {
+  const id = movedEl.dataset.ideaId || movedEl.dataset.boardId;
+  if (!id) return;
+  const svg = document.getElementById('map-lines');
+  svg.querySelectorAll('.cross-conn').forEach(p => {
+    const cid = p.dataset.connId;
+    const conn = connections.find(c => String(c.id) === cid);
+    if (!conn) return;
+    const canvas = document.getElementById('map-canvas');
+    const fromEl = canvas.querySelector(`[data-board-id="${conn.sourceId}"], [data-idea-id="${conn.sourceId}"]`);
+    const toEl   = canvas.querySelector(`[data-board-id="${conn.targetId}"], [data-idea-id="${conn.targetId}"]`);
+    if (fromEl && toEl) refreshConnector(p, fromEl, toEl);
   });
 }
 
@@ -724,7 +834,7 @@ function makeBoardNode(board, pos, subtitle, idx) {
   el.innerHTML = `
     <div class="node-title">${board.title}</div>
     <div class="board-count">${subtitle}</div>
-    <div class="drill-hint">double-click to open ↗</div>
+    <div class="drill-hint">double-click to explore →</div>
   `;
   return el;
 }
@@ -791,7 +901,7 @@ function renderLevel(animate) {
     centralPaths.push({ pathEl, otherEl: node, isSource: true });
 
     node.addEventListener('dblclick', e => { e.stopPropagation(); drillInto(b.id, node); });
-    makeDraggable(node, [{ pathEl, otherEl: centralNode, isSource: false }], null);
+    makeDraggable(node, [{ pathEl, otherEl: centralNode, isSource: false }], null, b.id);
     nodeIdx++;
   });
 
@@ -807,11 +917,14 @@ function renderLevel(animate) {
     const pathEl = makePath(svg, col);
     refreshConnector(pathEl, centralNode, node);
     centralPaths.push({ pathEl, otherEl: node, isSource: true });
-    makeDraggable(node, [{ pathEl, otherEl: centralNode, isSource: false }], () => showDetail(idea.id, node));
+    makeDraggable(node, [{ pathEl, otherEl: centralNode, isSource: false }], () => {
+      if (!connectMode) showDetail(idea.id, node);
+    }, String(idea.id));
     nodeIdx++;
   });
 
   makeDraggable(centralNode, centralPaths, null);
+  renderConnections();
 }
 
 // ── Detail panel ───────────────────────────────────────────────────────────────
