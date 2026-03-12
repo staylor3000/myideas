@@ -107,6 +107,8 @@
   .nav-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
   .nav-count { margin-left: auto; font-size: 10px; color: var(--muted); background: var(--surface2); padding: 1px 6px; border-radius: 10px; flex-shrink: 0; }
   .nav-item.nav-current .nav-count { background: var(--border); }
+  .nav-idea { cursor: default; font-size: 11px; }
+  .nav-idea:hover { background: none !important; color: var(--muted) !important; }
 
   /* Sidebar divider + status section */
   .sidebar-divider { height: 1px; background: var(--border); margin: 8px 0; flex-shrink: 0; }
@@ -496,12 +498,31 @@ function buildNavTree(parentId, depth) {
       <span>${board.title}</span>
       ${count > 0 ? `<span class="nav-count">${count}</span>` : ''}
     </div>`;
-    // Expand children only for ancestors in the active path (not current, which is the leaf)
-    if (isInPath) {
+    // Expand sub-boards for ancestors in path AND for the current board
+    if (isInPath || isCurrent) {
       html += buildNavTree(board.id, depth + 1);
+    }
+    // Show idea leaves inside the current board
+    if (isCurrent) {
+      html += buildNavIdeas(board.id, depth + 1);
     }
   });
   return html;
+}
+
+// Render idea leaf items for a board (shown inside the current board in the nav)
+function buildNavIdeas(boardId, depth) {
+  const boardIdeas = ideas.filter(i => i.tag === boardId);
+  if (!boardIdeas.length) return '';
+  const board  = boards.find(b => b.id === boardId);
+  const col    = board ? board.color : '#7c7a90';
+  const indent = 10 + depth * 14;
+  return boardIdeas.map(idea => `
+    <div class="nav-item nav-idea" style="padding-left:${indent}px">
+      <div class="nav-dot" style="background:${col}; opacity:0.4; width:5px; height:5px"></div>
+      <span style="opacity:0.7">${idea.title}</span>
+    </div>
+  `).join('');
 }
 
 function renderSidebarNav() {
