@@ -154,7 +154,12 @@
   .board-count { font-size: 10px; color: var(--muted); margin-top: 5px; }
   .drill-hint { font-size: 9px; color: var(--muted); margin-top: 7px; opacity: 0.65; border-top: 1px solid var(--border); padding-top: 6px; }
 
-  .map-lines { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+  .map-lines { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: visible; }
+
+  /* ZOOM CONTROLS */
+  .zoom-controls { position: absolute; bottom: 18px; right: 18px; z-index: 50; display: flex; flex-direction: column; gap: 4px; }
+  .zoom-btn { width: 32px; height: 32px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 17px; line-height: 1; display: flex; align-items: center; justify-content: center; color: var(--muted); transition: all 0.15s; font-family: monospace; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  .zoom-btn:hover { background: var(--surface2); color: var(--text); border-color: var(--muted); }
 
   /* DETAIL PANEL */
   .detail-panel { position: absolute; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; width: 220px; z-index: 15; box-shadow: 0 4px 20px rgba(0,0,0,0.12); animation: nodeIn 0.2s ease backwards; }
@@ -290,6 +295,11 @@
         <div id="map-canvas">
           <svg class="map-lines" id="map-lines"></svg>
         </div>
+        <div class="zoom-controls">
+          <button class="zoom-btn" onclick="zoomIn()" title="Zoom in">+</button>
+          <button class="zoom-btn" onclick="zoomOut()" title="Zoom out">−</button>
+          <button class="zoom-btn" onclick="fitToContent()" title="Fit to content" style="font-size:12px">⤢</button>
+        </div>
       </div>
 
     </div>
@@ -389,6 +399,7 @@ let connectMode    = false;
 let connectSrcId   = null;
 let connectSrcEl   = null;
 let expandedBoards = new Set(); // boards expanded in-place on canvas
+let canvasScale    = 1;         // current zoom level
 
 // ── Core helpers ───────────────────────────────────────────────────────────────
 
@@ -465,6 +476,7 @@ function drillInto(boardId, nodeEl) {
     renderExpanded(boards.find(b => b.id === boardId), nodeEl, canvas, svg);
     updateDrillHint(nodeEl, true);
     renderConnections();
+    setTimeout(fitToContent, 80); // zoom out to show new nodes after layout
   }
 }
 
@@ -492,9 +504,7 @@ function renderExpanded(board, boardNode, canvas, svg) {
   const subBoards = boards.filter(b => b.parentId === board.id);
   const subIdeas  = ideas.filter(i => i.tag === board.id);
   const total     = subBoards.length + subIdeas.length;
-  const bx = parseInt(boardNode.style.left);
-  const by = parseInt(boardNode.style.top);
-  const defaults = getDefaultPositions(total, bx, by, 200);
+  const defaults  = getExpandedPositions(total, boardNode);
   if (!nodePositionsByBoard[board.id]) nodePositionsByBoard[board.id] = {};
   const positions = nodePositionsByBoard[board.id];
   if (!boardNode._childPaths) boardNode._childPaths = [];
@@ -508,8 +518,9 @@ function renderExpanded(board, boardNode, canvas, svg) {
     if (ideaCnt) parts.push(`${ideaCnt} idea${ideaCnt !== 1 ? 's' : ''}`);
     const subtitle = parts.length ? parts.join(', ') : 'empty';
     const pos = positions[b.id] || defaults[idx];
-    if (!positions[b.id]) positions[b.id] = pos;
-    const node = makeBoardNode(b, pos, subtitle, idx, expandedBoards.has(b.id));
+    if (!positions[b.id]) positions[b.id] = { ...pos }; // snapshot default so drags are sticky
+    const node = makeBoardNode(b, positions[b.id], subtitle, idx, expandedBoards.has(b.id));
+    node.dataset.parentBoard = board.id;
     canvas.appendChild(node);
     const pathEl = makePath(svg, b.color);
     pathEl.dataset.parentBoard = board.id;
@@ -524,9 +535,10 @@ function renderExpanded(board, boardNode, canvas, svg) {
   subIdeas.forEach(idea => {
     const pos = positions[idea.id] || defaults[idx];
     if (!pos) return;
-    if (!positions[idea.id]) positions[idea.id] = pos;
-    const node = makeNode(false, idea.title, idea.status, pos.x, pos.y, board.color, idx);
-    node.dataset.ideaId = String(idea.id);
+    if (!positions[idea.id]) positions[idea.id] = { ...pos }; // snapshot default
+    const node = makeNode(false, idea.title, idea.status, positions[idea.id].x, positions[idea.id].y, board.color, idx);
+    node.dataset.ideaId    = String(idea.id);
+    node.dataset.parentBoard = board.id;
     canvas.appendChild(node);
     const pathEl = makePath(svg, board.color);
     pathEl.dataset.parentBoard = board.id;
@@ -542,6 +554,52 @@ function renderExpanded(board, boardNode, canvas, svg) {
 function drillOut() {
   if (navigationStack.length === 0) return;
   navigateToLevel(navigationStack.slice(0, -1));
+}
+
+// ── Zoom ───────────────────────────────────────────────────────────────────────
+
+function applyZoom(newScale, anchorX, anchorY) {
+  newScale = Math.max(0.2, Math.min(3, newScale));
+  const canvas    = document.getElementById('map-canvas');
+  const container = document.getElementById('map-view');
+  const m         = new DOMMatrix(getComputedStyle(canvas).transform);
+  const oldScale  = m.m11 || 1;
+  const oldTx = m.m41, oldTy = m.m42;
+  const ax = anchorX ?? container.offsetWidth  / 2;
+  const ay = anchorY ?? container.offsetHeight / 2;
+  // keep the canvas point under the anchor fixed
+  const canvasAx = (ax - oldTx) / oldScale;
+  const canvasAy = (ay - oldTy) / oldScale;
+  canvasScale = newScale;
+  canvas.style.transition = 'transform 0.15s ease';
+  canvas.style.transform  = `translate(${ax - canvasAx * newScale}px, ${ay - canvasAy * newScale}px) scale(${newScale})`;
+  setTimeout(() => { canvas.style.transition = 'none'; }, 160);
+}
+
+function zoomIn()  { applyZoom(canvasScale * 1.25); }
+function zoomOut() { applyZoom(canvasScale / 1.25); }
+
+function fitToContent() {
+  const canvas    = document.getElementById('map-canvas');
+  const container = document.getElementById('map-view');
+  const nodes     = canvas.querySelectorAll('.map-node');
+  if (nodes.length < 2) return;
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  nodes.forEach(n => {
+    const x = parseInt(n.style.left) || 0, y = parseInt(n.style.top) || 0;
+    const w = n.offsetWidth || 160,        h = n.offsetHeight || 80;
+    minX = Math.min(minX, x);     minY = Math.min(minY, y);
+    maxX = Math.max(maxX, x + w); maxY = Math.max(maxY, y + h);
+  });
+  const PAD = 60;
+  const cW = container.offsetWidth, cH = container.offsetHeight;
+  const newScale = Math.min(1.5, Math.max(0.2, Math.min(cW / (maxX - minX + PAD*2), cH / (maxY - minY + PAD*2))));
+  const newTx = cW / 2 - (minX + (maxX - minX) / 2) * newScale;
+  const newTy = cH / 2 - (minY + (maxY - minY) / 2) * newScale;
+  canvasScale = newScale;
+  canvas.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+  canvas.style.transform  = `translate(${newTx}px, ${newTy}px) scale(${newScale})`;
+  setTimeout(() => { canvas.style.transition = 'none'; }, 420);
 }
 
 // ── Connections ────────────────────────────────────────────────────────────────
@@ -786,6 +844,28 @@ function getDefaultPositions(count, cx, cy, radius) {
   return out;
 }
 
+// Fan expanded children outward from canvas centre in the same direction as their parent board node.
+// They appear on the next concentric ring beyond the board node.
+function getExpandedPositions(count, boardNode) {
+  if (!centralNode || count === 0) {
+    const bx = parseInt(boardNode.style.left), by = parseInt(boardNode.style.top);
+    return getDefaultPositions(count, bx, by, 180);
+  }
+  const [cx, cy] = nodeCenter(centralNode);
+  const [bx, by] = nodeCenter(boardNode);
+  const angle     = Math.atan2(by - cy, bx - cx);
+  const boardDist = Math.sqrt((bx-cx)**2 + (by-cy)**2);
+  const ringRadius = boardDist + 230;
+  const fanSpread  = Math.min(Math.PI * 0.72, Math.max(0.45, count * 0.45));
+  const out = [];
+  for (let i = 0; i < count; i++) {
+    const t = count === 1 ? 0 : (i / (count - 1) - 0.5);
+    const a = angle + t * fanSpread;
+    out.push({ x: cx + Math.cos(a) * ringRadius - 80, y: cy + Math.sin(a) * ringRadius - 40 });
+  }
+  return out;
+}
+
 function nodeCenter(el) {
   return [
     parseInt(el.style.left) + (el.offsetWidth  || 160) / 2,
@@ -840,8 +920,14 @@ function makeDraggable(el, connectedPaths, onClick, nodeId) {
       el.style.cursor = 'grab'; el.style.zIndex = 2;
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
-      const posKey = el.dataset.ideaId || el.dataset.boardId;
-      if (posKey) currentPositions()[posKey] = { x: parseInt(el.style.left), y: parseInt(el.style.top) };
+      const posKey     = el.dataset.ideaId || el.dataset.boardId;
+      const parentBoard = el.dataset.parentBoard;
+      if (posKey) {
+        const store = parentBoard
+          ? (nodePositionsByBoard[parentBoard] || (nodePositionsByBoard[parentBoard] = {}))
+          : currentPositions();
+        store[posKey] = { x: parseInt(el.style.left), y: parseInt(el.style.top) };
+      }
       if (!dragged) {
         if (connectMode && nodeId) handleConnectClick(el, nodeId);
         else if (onClick) onClick();
@@ -902,7 +988,7 @@ function makeBoardNode(board, pos, subtitle, idx, isExpanded) {
 function _prepCanvas(animate) {
   const canvas = document.getElementById('map-canvas');
   const svg    = document.getElementById('map-lines');
-  canvas.style.transition = 'none'; canvas.style.transform = ''; canvas.style.opacity = '';
+  canvas.style.transition = 'none'; canvas.style.transform = canvasScale !== 1 ? `scale(${canvasScale})` : ''; canvas.style.opacity = '';
   svg.style.transition    = ''; svg.style.opacity = '';
   canvas.querySelectorAll('.map-node, .detail-panel').forEach(n => n.remove());
   if (detailConnectorPath) { detailConnectorPath.remove(); detailConnectorPath = null; }
@@ -1172,9 +1258,15 @@ function saveIdea() {
     if (!panStart) return;
     const dx = e.clientX-panStart.x, dy = e.clientY-panStart.y;
     canvas.style.transition = 'none';
-    canvas.style.transform  = `translate(${panOrigin.x+dx}px, ${panOrigin.y+dy}px)`;
+    canvas.style.transform  = `translate(${panOrigin.x+dx}px, ${panOrigin.y+dy}px) scale(${canvasScale})`;
   });
   document.addEventListener('mouseup', () => { panStart = null; panOrigin = null; });
+  mapView.addEventListener('wheel', e => {
+    e.preventDefault();
+    const rect  = mapView.getBoundingClientRect();
+    const delta = e.deltaY > 0 ? 1/1.12 : 1.12;
+    applyZoom(canvasScale * delta, e.clientX - rect.left, e.clientY - rect.top);
+  }, { passive: false });
 })();
 
 // ── Keyboard ───────────────────────────────────────────────────────────────────
