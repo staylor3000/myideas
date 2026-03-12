@@ -584,8 +584,8 @@ function updateUI() {
 
 function setView(v) {
   currentView = v;
-  document.getElementById('btn-grid').classList.toggle('active', v === 'grid');
-  document.getElementById('btn-map').classList.toggle('active',  v === 'map');
+  document.getElementById('btn-grid')?.classList.toggle('active', v === 'grid');
+  document.getElementById('btn-map')?.classList.toggle('active',  v === 'map');
   document.getElementById('grid-view').style.display   = v === 'grid' ? 'grid'  : 'none';
   document.getElementById('map-view').style.display    = v === 'map'  ? 'block' : 'none';
   document.getElementById('search-wrap').style.display = v === 'grid' ? 'block' : 'none';
