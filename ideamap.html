@@ -1122,6 +1122,8 @@ function showDetail(id, nodeEl) {
   detailConnectorPath = makePath(svg, col);
   refreshConnector(detailConnectorPath, nodeEl, panel);
 
+  makeDraggable(panel, [{ pathEl: detailConnectorPath, otherEl: nodeEl, isSource: true }], null, null);
+
   requestAnimationFrame(() => {
     const container = document.getElementById('map-view');
     const MARGIN = 16;
