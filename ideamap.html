@@ -388,6 +388,7 @@ let connections    = []; // {id, sourceId, targetId} — board IDs or idea IDs
 let connectMode    = false;
 let connectSrcId   = null;
 let connectSrcEl   = null;
+let expandedBoards = new Set(); // boards expanded in-place on canvas
 
 // ── Core helpers ───────────────────────────────────────────────────────────────
 
@@ -452,36 +453,90 @@ function navigateToBoard(boardId) {
 }
 
 function drillInto(boardId, nodeEl) {
-  const canvas    = document.getElementById('map-canvas');
-  const svg       = document.getElementById('map-lines');
-  const container = document.getElementById('map-view');
+  const canvas = document.getElementById('map-canvas');
+  const svg    = document.getElementById('map-lines');
+  if (expandedBoards.has(boardId)) {
+    expandedBoards.delete(boardId);
+    collapseBoard(boardId, canvas, svg);
+    updateDrillHint(nodeEl, false);
+  } else {
+    expandedBoards.add(boardId);
+    nodeEl._childPaths = [];
+    renderExpanded(boards.find(b => b.id === boardId), nodeEl, canvas, svg);
+    updateDrillHint(nodeEl, true);
+    renderConnections();
+  }
+}
 
-  // Slide canvas so the double-clicked node glides to the viewport centre
-  const W = container.offsetWidth, H = container.offsetHeight;
-  const targetX = W / 2 - 90, targetY = H / 2 - 50; // matches cx/cy in renderLevel
-  const nodeX   = parseInt(nodeEl.style.left);
-  const nodeY   = parseInt(nodeEl.style.top);
-  const newCanvasX = targetX - nodeX;
-  const newCanvasY = targetY - nodeY;
-
-  // Fade siblings out, keep clicked node prominent
-  canvas.querySelectorAll('.map-node').forEach(n => {
-    n.style.transition = 'opacity 0.28s ease, transform 0.32s ease';
-    if (n !== nodeEl) { n.style.opacity = '0'; n.style.transform = 'scale(0.88)'; }
-    else { n.style.transform = 'scale(1.1)'; }
+function collapseBoard(boardId, canvas, svg) {
+  // Remove connector paths tagged with this parent board
+  svg.querySelectorAll(`[data-parent-board="${boardId}"]`).forEach(p => p.remove());
+  // Recursively collapse sub-boards
+  boards.filter(b => b.parentId === boardId).forEach(b => {
+    if (expandedBoards.has(b.id)) { expandedBoards.delete(b.id); collapseBoard(b.id, canvas, svg); }
+    canvas.querySelector(`[data-board-id="${b.id}"]`)?.remove();
   });
-  svg.style.transition = 'opacity 0.18s ease'; svg.style.opacity = '0';
+  // Remove idea nodes
+  ideas.filter(i => i.tag === boardId).forEach(idea => {
+    canvas.querySelector(`[data-idea-id="${idea.id}"]`)?.remove();
+  });
+  renderConnections();
+}
 
-  // Slide canvas to bring this node to centre
-  canvas.style.transition = 'transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-  canvas.style.transform  = `translate(${newCanvasX}px, ${newCanvasY}px)`;
+function updateDrillHint(nodeEl, isExpanded) {
+  const hint = nodeEl.querySelector('.drill-hint');
+  if (hint) hint.textContent = isExpanded ? 'double-click to collapse −' : 'double-click to expand +';
+}
 
-  setTimeout(() => {
-    navigationStack.push(boardId);
-    currentFilter = 'all';
-    updateUI();
-    renderLevel(true);
-  }, 400);
+function renderExpanded(board, boardNode, canvas, svg) {
+  const subBoards = boards.filter(b => b.parentId === board.id);
+  const subIdeas  = ideas.filter(i => i.tag === board.id);
+  const total     = subBoards.length + subIdeas.length;
+  const bx = parseInt(boardNode.style.left);
+  const by = parseInt(boardNode.style.top);
+  const defaults = getDefaultPositions(total, bx, by, 200);
+  if (!nodePositionsByBoard[board.id]) nodePositionsByBoard[board.id] = {};
+  const positions = nodePositionsByBoard[board.id];
+  if (!boardNode._childPaths) boardNode._childPaths = [];
+  let idx = 0;
+
+  subBoards.forEach(b => {
+    const subCnt  = boards.filter(x => x.parentId === b.id).length;
+    const ideaCnt = ideas.filter(i => i.tag === b.id).length;
+    const parts = [];
+    if (subCnt)  parts.push(`${subCnt} board${subCnt !== 1 ? 's' : ''}`);
+    if (ideaCnt) parts.push(`${ideaCnt} idea${ideaCnt !== 1 ? 's' : ''}`);
+    const subtitle = parts.length ? parts.join(', ') : 'empty';
+    const pos = positions[b.id] || defaults[idx];
+    if (!positions[b.id]) positions[b.id] = pos;
+    const node = makeBoardNode(b, pos, subtitle, idx, expandedBoards.has(b.id));
+    canvas.appendChild(node);
+    const pathEl = makePath(svg, b.color);
+    pathEl.dataset.parentBoard = board.id;
+    refreshConnector(pathEl, boardNode, node);
+    boardNode._childPaths.push({ pathEl, childEl: node });
+    node.addEventListener('dblclick', e => { e.stopPropagation(); drillInto(b.id, node); });
+    makeDraggable(node, [{ pathEl, otherEl: boardNode, isSource: false }], null, b.id);
+    if (expandedBoards.has(b.id)) renderExpanded(b, node, canvas, svg);
+    idx++;
+  });
+
+  subIdeas.forEach(idea => {
+    const pos = positions[idea.id] || defaults[idx];
+    if (!pos) return;
+    if (!positions[idea.id]) positions[idea.id] = pos;
+    const node = makeNode(false, idea.title, idea.status, pos.x, pos.y, board.color, idx);
+    node.dataset.ideaId = String(idea.id);
+    canvas.appendChild(node);
+    const pathEl = makePath(svg, board.color);
+    pathEl.dataset.parentBoard = board.id;
+    refreshConnector(pathEl, boardNode, node);
+    boardNode._childPaths.push({ pathEl, childEl: node });
+    makeDraggable(node, [{ pathEl, otherEl: boardNode, isSource: false }], () => {
+      if (!connectMode) showDetail(idea.id, node);
+    }, String(idea.id));
+    idx++;
+  });
 }
 
 function drillOut() {
@@ -775,7 +830,10 @@ function makeDraggable(el, connectedPaths, onClick, nodeId) {
       connectedPaths.forEach(({ pathEl, otherEl, isSource }) =>
         isSource ? refreshConnector(pathEl, el, otherEl) : refreshConnector(pathEl, otherEl, el)
       );
-      // keep cross-connections live while dragging
+      // Keep child connectors live when dragging an expanded board node
+      if (el._childPaths && el._childPaths.length) {
+        el._childPaths.forEach(({ pathEl, childEl }) => refreshConnector(pathEl, el, childEl));
+      }
       svg_liveConnUpdate(el);
     }
     function onUp() {
@@ -824,7 +882,7 @@ function makeNode(isCentral, title, label, x, y, col, idx) {
   return el;
 }
 
-function makeBoardNode(board, pos, subtitle, idx) {
+function makeBoardNode(board, pos, subtitle, idx, isExpanded) {
   const el = document.createElement('div');
   el.className = 'map-node board-node';
   el.style.left = pos.x+'px'; el.style.top = pos.y+'px';
@@ -834,7 +892,7 @@ function makeBoardNode(board, pos, subtitle, idx) {
   el.innerHTML = `
     <div class="node-title">${board.title}</div>
     <div class="board-count">${subtitle}</div>
-    <div class="drill-hint">double-click to explore →</div>
+    <div class="drill-hint">${isExpanded ? 'double-click to collapse −' : 'double-click to expand +'}</div>
   `;
   return el;
 }
@@ -893,7 +951,7 @@ function renderLevel(animate) {
 
     const pos = positions[b.id] || defaults[nodeIdx];
     if (!positions[b.id]) positions[b.id] = pos;
-    const node = makeBoardNode(b, pos, subtitle, nodeIdx);
+    const node = makeBoardNode(b, pos, subtitle, nodeIdx, expandedBoards.has(b.id));
     canvas.appendChild(node);
 
     const pathEl = makePath(svg, b.color);
@@ -902,6 +960,12 @@ function renderLevel(animate) {
 
     node.addEventListener('dblclick', e => { e.stopPropagation(); drillInto(b.id, node); });
     makeDraggable(node, [{ pathEl, otherEl: centralNode, isSource: false }], null, b.id);
+
+    // Re-expand if this board was already open
+    if (expandedBoards.has(b.id)) {
+      node._childPaths = [];
+      renderExpanded(b, node, canvas, svg);
+    }
     nodeIdx++;
   });
 
