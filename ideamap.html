@@ -481,6 +481,9 @@ function drillInto(boardId, nodeEl) {
 }
 
 function collapseBoard(boardId, canvas, svg) {
+  // Close detail panel if it belongs to an idea inside this board
+  const panel = canvas.querySelector('.detail-panel');
+  if (panel && ideas.find(i => String(i.id) === panel.dataset.ideaId && i.tag === boardId)) closeDetail();
   // Remove connector paths tagged with this parent board
   svg.querySelectorAll(`[data-parent-board="${boardId}"]`).forEach(p => p.remove());
   // Recursively collapse sub-boards
@@ -901,6 +904,7 @@ function makeDraggable(el, connectedPaths, onClick, nodeId) {
     const sx = e.clientX, sy = e.clientY;
     const sl = parseInt(el.style.left), st = parseInt(el.style.top);
     let dragged = false;
+    const origZIndex = el.style.zIndex;
     el.style.cursor = 'grabbing'; el.style.zIndex = 20;
 
     function onMove(e) {
@@ -917,7 +921,7 @@ function makeDraggable(el, connectedPaths, onClick, nodeId) {
       svg_liveConnUpdate(el);
     }
     function onUp() {
-      el.style.cursor = 'grab'; el.style.zIndex = 2;
+      el.style.cursor = 'grab'; el.style.zIndex = origZIndex;
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
       const posKey     = el.dataset.ideaId || el.dataset.boardId;
@@ -1251,6 +1255,7 @@ function saveIdea() {
   mapView.addEventListener('mousedown', e => {
     const t = e.target;
     if (t === mapView || t === canvas || t.classList.contains('map-lines') || t.tagName === 'svg') {
+      closeDetail();
       panStart = { x: e.clientX, y: e.clientY };
       const m  = new DOMMatrix(getComputedStyle(canvas).transform);
       panOrigin = { x: m.m41, y: m.m42 };
